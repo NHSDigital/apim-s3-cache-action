@@ -1,0 +1,33 @@
+{
+    "manifestVersion": 1,
+    "id": "s3-cache-task",
+    "name": "S3 Cache Action",
+    "version": "0.0.1",
+    "publisher": "nhsd-apim-alca3",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Task for Caching to S3 within Pipelines.",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "files": [
+        {
+            "path": "buildAndReleaseTask"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "custom-build-release-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "buildAndReleaseTask"
+            }
+        }
+    ]
+}
