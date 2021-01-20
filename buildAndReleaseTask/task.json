@@ -27,5 +27,10 @@
         "Node10": {
             "target": "index.js"
         }
+    },
+    "postjobexecution": {
+        "Node10": {
+          "target": "savecache.js"
+        }
     }
 }
