@@ -1,4 +1,4 @@
-tl = require('azure-pipelines-task-lib/task');
+const tl = require('azure-pipelines-task-lib/task');
 
 async function run() {
     try {

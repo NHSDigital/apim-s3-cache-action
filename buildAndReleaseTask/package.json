@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/NHSDigital/apim-s3-cache-action#readme",
   "dependencies": {
+    "axios": "^0.21.1",
     "azure-pipelines-task-lib": "^3.0.6-preview.1"
   },
   "devDependencies": {
