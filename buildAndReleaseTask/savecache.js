@@ -9,7 +9,7 @@ async function run() {
             return;
         }
         console.log('Simulating: Saving -', inputString);
-        axios.get('https://internal-dev.api.service.nhs.uk/canary-api/_ping');
+        await axios.get('https://internal-dev.api.service.nhs.uk/canary-api/_ping');
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
