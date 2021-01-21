@@ -7,7 +7,7 @@ async function run() {
             tl.setResult(tl.TaskResult.Failed, 'Bad input was given');
             return;
         }
-        console.log('Simulating: Caching ', inputString);
+        console.log('Simulate: Caching ', inputString);
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
