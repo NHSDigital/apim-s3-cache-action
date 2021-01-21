@@ -1,4 +1,6 @@
 const tl = require('azure-pipelines-task-lib/task');
+const AWS = require('aws-sdk');
+const s3 = new AWS.S3();
 
 async function run() {
     try {
