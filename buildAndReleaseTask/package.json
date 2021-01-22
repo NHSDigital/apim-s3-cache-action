@@ -4,7 +4,11 @@
   "description": "## Overview The S3 cache action should be used with build pipelines in Azure DevOps to give us better control of our caching when deploying APIs. This is currently at a proof of concept stage.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "localstack:init": "npm run localstack:up && docker logs localstack -f",
+    "localstack:up": "docker-compose up -d",
+    "localstack:config": "aws --endpoint-url=http://localhost:4566 s3 mb s3://demo-bucket && aws --endpoint-url=http://localhost:4566 s3api put-bucket-acl --bucket demo-bucket --acl public-read",
+    "test-upload": "node test-upload.js"
   },
   "repository": {
     "type": "git",
@@ -20,7 +24,8 @@
   "dependencies": {
     "aws-sdk": "^2.829.0",
     "axios": "^0.21.1",
-    "azure-pipelines-task-lib": "^3.0.6-preview.1"
+    "azure-pipelines-task-lib": "^3.0.6-preview.1",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
     "@types/node": "^10.17.51",
