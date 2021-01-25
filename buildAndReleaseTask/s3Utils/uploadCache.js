@@ -7,7 +7,7 @@ const uploadCacheFile = (data, credentials, bucketName, fileName) => {
       s3ForcePathStyle: true,
    });
 
-   return new Promise((resolve) => {
+   return new Promise((resolve, reject) => {
       s3client.upload(
          {
             Bucket: bucketName,
@@ -15,12 +15,14 @@ const uploadCacheFile = (data, credentials, bucketName, fileName) => {
             Body: data,
          },
          (err, resp) => {
-            if (err) throw err;
+            if (err) reject(err);
             resolve(resp);
          },
       );
    }).then((result) => {
       return result;
+   }).catch((err) => {
+      console.log(err)
    });
 };
 
