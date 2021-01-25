@@ -1,4 +1,4 @@
-const fs = require("fs")
+const fs = require("fs");
 const path = require("path");
 require('dotenv').config();
 
@@ -11,13 +11,15 @@ const credentials = {
  const bucketName = process.env.AWS_BUCKET_NAME;
 
 describe("uploadCacheFile", () => {
-    test("successful cache upload", async () => {
+    test("successfully uploads cache to s3 bucket.", async () => {
         const filePath = path.resolve(__dirname, "testData/test.json");
         const fileStream = fs.createReadStream(filePath);
         const now = new Date();
         const fileName = `test-${now.toISOString()}.json`;
 
         const result = await uploadCacheFile(fileStream, credentials, bucketName, fileName);
-        expect(result).toHaveProperty("Bucket");
+
+        expect(result["Bucket"]).toBe(bucketName);
+        expect(result["Key"]).toBe(fileName);
     });
 });

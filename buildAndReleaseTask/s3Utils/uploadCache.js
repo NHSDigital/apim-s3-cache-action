@@ -1,9 +1,12 @@
 const AWS = require('aws-sdk');
+require('dotenv').config();
 
 const uploadCacheFile = (data, credentials, bucketName, fileName) => {
+   const endpoint = process.env.AWS_USE_LOCAL ? 'http://localhost:4566' : undefined;
+
    const s3client = new AWS.S3({
       credentials,
-      endpoint: 'http://localhost:4566',
+      endpoint,
       s3ForcePathStyle: true,
    });
 
@@ -17,10 +20,8 @@ const uploadCacheFile = (data, credentials, bucketName, fileName) => {
          (err, resp) => {
             if (err) reject(err);
             resolve(resp);
-         },
+         }
       );
-   }).then((result) => {
-      return result;
    }).catch((err) => {
       console.log(err)
    });
