@@ -15,7 +15,7 @@ const s3client = new AWS.S3({
 });
 
 
-const saveCacheFile = async (data, fileName) =>
+const uploadCacheFile = async (data, fileName) =>
    new Promise((resolve) => {
       s3client.upload(
          {
@@ -24,10 +24,10 @@ const saveCacheFile = async (data, fileName) =>
             Body: data,
          },
          (err, resp) => {
-            if (err) throw err
-            resolve(resp)
+            if (err) throw err;
+            resolve(resp);
          },
       );
    });
 
-module.exports = saveCacheFile;
+module.exports = uploadCacheFile;

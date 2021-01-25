@@ -8,7 +8,7 @@
     "localstack:init": "npm run localstack:up && docker logs localstack -f",
     "localstack:up": "docker-compose up -d",
     "localstack:config": "aws --endpoint-url=http://localhost:4566 s3 mb s3://demo-bucket && aws --endpoint-url=http://localhost:4566 s3api put-bucket-acl --bucket demo-bucket --acl public-read",
-    "test-upload": "node test-upload.js"
+    "test-upload": "node s3Utils/tests/test-upload.js"
   },
   "repository": {
     "type": "git",
