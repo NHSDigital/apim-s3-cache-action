@@ -1,22 +1,13 @@
 const AWS = require('aws-sdk');
-require('dotenv').config();
 
-const credentials = {
-   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-   secretAccessKey: process.env.AWS_SECRET_KEY,
-};
+const uploadCacheFile = (data, credentials, bucketName, fileName) => {
+   const s3client = new AWS.S3({
+      credentials,
+      endpoint: 'http://localhost:4566',
+      s3ForcePathStyle: true,
+   });
 
-const bucketName = process.env.AWS_BUCKET_NAME;
-
-const s3client = new AWS.S3({
-   credentials,
-   endpoint: 'http://localhost:4566',
-   s3ForcePathStyle: true,
-});
-
-
-const uploadCacheFile = async (data, fileName) =>
-   new Promise((resolve) => {
+   return new Promise((resolve) => {
       s3client.upload(
          {
             Bucket: bucketName,
@@ -28,6 +19,9 @@ const uploadCacheFile = async (data, fileName) =>
             resolve(resp);
          },
       );
+   }).then((result) => {
+      return result
    });
+};
 
 module.exports = uploadCacheFile;
