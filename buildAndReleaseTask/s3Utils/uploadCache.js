@@ -20,7 +20,7 @@ const uploadCacheFile = (data, credentials, bucketName, fileName) => {
          },
       );
    }).then((result) => {
-      return result
+      return result;
    });
 };
 
