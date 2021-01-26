@@ -15,10 +15,10 @@ describe("uploadCacheFile", () => {
 
         test("successfully uploads cache to s3 bucket.", async () => {
             const bucketName = process.env.AWS_BUCKET_NAME;
-            const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+            const pathToFile = path.resolve(__dirname, "testData/test.json");
             const keyName = `test-${new Date().toISOString()}.json`;
 
-            const resp = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+            const resp = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
             expect(resp["Bucket"]).toBe(bucketName);
             expect(resp["Key"]).toBe(keyName);
@@ -31,20 +31,20 @@ describe("uploadCacheFile", () => {
 
             test("bucket does not exist.", async () => {
                 const bucketName = "bucket-doesnt-exist";
-                const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+                const pathToFile = path.resolve(__dirname, "testData/test.json");
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("The specified bucket does not exist");
             });
 
             test("missing bucket parameter.", async () => {
                 const bucketName = undefined;
-                const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+                const pathToFile = path.resolve(__dirname, "testData/test.json");
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("Missing required key 'Bucket' in params");
             });
@@ -55,46 +55,36 @@ describe("uploadCacheFile", () => {
 
             test("missing key parameter.", async () => {
                 const bucketName = process.env.AWS_BUCKET_NAME;
-                const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+                const pathToFile = path.resolve(__dirname, "testData/test.json");
                 const keyName = undefined;
 
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("Missing required key 'Key' in params");
             });
 
         });
 
-        describe("fileStream", () => {
+        describe("pathToFile", () => {
             
-            test("missing fileStream parameter.", async () => {
+            test("missing pathToFile parameter.", async () => {
                 const bucketName = process.env.AWS_BUCKET_NAME;
-                const fileStream = undefined;
+                const pathToFile = undefined;
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
-                expect(error.message).toBe("params.Body is required");
+                expect(error.message).toBe("The \"path\" argument must be one of type string, Buffer, or URL. Received type undefined");
             });
 
-            test("invalid fileStream path.", async () => {
+            test("invalid pathToFile path.", async () => {
                 const bucketName = process.env.AWS_BUCKET_NAME;
-                const fileStream = fs.createReadStream("not-a-real-path");
+                const pathToFile = "not-a-real-path";
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("ENOENT: no such file or directory, open 'not-a-real-path'");
-            });
-
-            test("invalid payload.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
-                const fileStream = {testData: "test data"};
-                const keyName = `test-${new Date().toISOString()}.json`;
-
-                const error = await uploadCacheFile(fileStream, credentials, bucketName, keyName);
-
-                expect(error.message).toBe("Unsupported body payload object");
             });
 
         })

@@ -1,16 +1,18 @@
-const AWS = require('aws-sdk');
-require('dotenv').config();
+const AWS = require("aws-sdk");
+const fs = require("fs");
+require("dotenv").config();
 
-const uploadCacheFile = async (fileStream, credentials, bucketName, keyName) => {
-   const endpoint = process.env.AWS_USE_LOCAL ? 'http://localhost:4566' : undefined;
-
-   const s3client = new AWS.S3({
-      credentials,
-      endpoint,
-      s3ForcePathStyle: true,
-   });
-
+const uploadCacheFile = async (pathToFile, credentials, bucketName, keyName) => {
    try {
+      const endpoint = process.env.AWS_USE_LOCAL ? "http://localhost:4566" : undefined;
+      const s3client = new AWS.S3({
+         credentials,
+         endpoint,
+         s3ForcePathStyle: true,
+      });
+
+      const fileStream = fs.createReadStream(pathToFile);
+
       return await s3client.upload(
          {
             Bucket: bucketName,
@@ -18,6 +20,7 @@ const uploadCacheFile = async (fileStream, credentials, bucketName, keyName) => 
             Body: fileStream,
          }
       ).promise();
+
    } catch (err) {
       return err;
    };
