@@ -15,10 +15,8 @@ describe("uploadCacheFile", () => {
 
         test("successfully uploads cache to s3 bucket.", async () => {
             const bucketName = process.env.AWS_BUCKET_NAME;
-            const filePath = path.resolve(__dirname, "testData/test.json");
-            const fileStream = fs.createReadStream(filePath);
-            const now = new Date();
-            const fileName = `test-${now.toISOString()}.json`;
+            const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+            const fileName = `test-${new Date().toISOString()}.json`;
 
             const resp = await uploadCacheFile(fileStream, credentials, bucketName, fileName);
 
@@ -29,18 +27,29 @@ describe("uploadCacheFile", () => {
     });
 
     describe("error scenarios", () => {
-        test("bucket does not exist.", async () => {
-            const bucketName = "bucket-doesnt-exist";
-            const filePath = path.resolve(__dirname, "testData/test.json");
-            const fileStream = fs.createReadStream(filePath);
-            const now = new Date();
-            const fileName = `test-${now.toISOString()}.json`;
+        describe("bucket", () => {
 
-            const error = await uploadCacheFile(fileStream, credentials, bucketName, fileName);
+            test("bucket does not exist.", async () => {
+                const bucketName = "bucket-doesnt-exist";
+                const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+                const fileName = `test-${new Date().toISOString()}.json`;
 
-            expect(error["statusCode"]).toBe(404);
-            expect(error["code"]).toBe("NoSuchBucket");
-        })
-    })
+                const error = await uploadCacheFile(fileStream, credentials, bucketName, fileName);
+
+                expect(error["code"]).toBe("NoSuchBucket");
+            });
+
+            test("missing bucket parameter.", async () => {
+                const bucketName = undefined;
+                const fileStream = fs.createReadStream(path.resolve(__dirname, "testData/test.json"));
+                const fileName = `test-${new Date().toISOString()}.json`;
+
+                const error = await uploadCacheFile(fileStream, credentials, bucketName, fileName);
+
+                expect(error["code"]).toBe("MissingRequiredParameter");
+            });
+
+        });
+    });
 
 });
