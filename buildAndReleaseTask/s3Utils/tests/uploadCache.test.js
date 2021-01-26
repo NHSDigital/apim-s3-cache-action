@@ -27,6 +27,50 @@ describe("uploadCacheFile", () => {
     });
 
     describe("error scenarios", () => {
+        
+
+        describe("pathToFile", () => {
+            
+            test("missing pathToFile parameter.", async () => {
+                const bucketName = process.env.AWS_BUCKET_NAME;
+                const pathToFile = undefined;
+                const keyName = `test-${new Date().toISOString()}.json`;
+
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
+
+                expect(error.message).toBe("The \"path\" argument must be one of type string, Buffer, or URL. Received type undefined");
+            });
+
+            test("invalid pathToFile path.", async () => {
+                const bucketName = process.env.AWS_BUCKET_NAME;
+                const pathToFile = "not-a-real-path";
+                const keyName = `test-${new Date().toISOString()}.json`;
+
+                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
+
+                expect(error.message).toBe("ENOENT: no such file or directory, open 'not-a-real-path'");
+            });
+
+        });
+
+        describe("credentials", () => {
+
+            beforeAll(() => { process.env.AWS_ENV = "not-localstack" });
+            afterAll(() => { process.env.AWS_ENV = "localstack" });
+
+            test("missing credentials.", async () => {
+                const bucketName = process.env.AWS_BUCKET_NAME;
+                const pathToFile = path.resolve(__dirname, "testData/test.json");
+                const keyName = `test-${new Date().toISOString()}.json`;
+                const invalidCredentials = undefined;
+    
+                const error = await uploadCacheFile(pathToFile, invalidCredentials, bucketName, keyName);
+    
+                expect(error.message).toBe("Access Denied");
+            });
+
+        });
+
         describe("bucket", () => {
 
             test("bucket does not exist.", async () => {
@@ -65,29 +109,6 @@ describe("uploadCacheFile", () => {
 
         });
 
-        describe("pathToFile", () => {
-            
-            test("missing pathToFile parameter.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
-                const pathToFile = undefined;
-                const keyName = `test-${new Date().toISOString()}.json`;
-
-                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
-
-                expect(error.message).toBe("The \"path\" argument must be one of type string, Buffer, or URL. Received type undefined");
-            });
-
-            test("invalid pathToFile path.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
-                const pathToFile = "not-a-real-path";
-                const keyName = `test-${new Date().toISOString()}.json`;
-
-                const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
-
-                expect(error.message).toBe("ENOENT: no such file or directory, open 'not-a-real-path'");
-            });
-
-        })
     });
 
 });

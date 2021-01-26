@@ -1,10 +1,9 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
-require("dotenv").config();
 
 const uploadCacheFile = async (pathToFile, credentials, bucketName, keyName) => {
    try {
-      const endpoint = process.env.AWS_USE_LOCAL ? "http://localhost:4566" : undefined;
+      const endpoint = process.env.AWS_ENV === "localstack" ? "http://localhost:4566" : undefined;
       const s3client = new AWS.S3({
          credentials,
          endpoint,
