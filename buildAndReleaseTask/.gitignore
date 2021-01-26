@@ -19,6 +19,7 @@ __pycache__/
 *.retry
 .env
 .localstack/
+s3Utils/tests/test-upload.js
 
 # node
 node_modules/

@@ -10,13 +10,17 @@ const uploadCacheFile = async (data, credentials, bucketName, fileName) => {
       s3ForcePathStyle: true,
    });
 
-   return await s3client.upload(
-      {
-         Bucket: bucketName,
-         Key: fileName,
-         Body: data,
-      }
-   ).promise();
+   try {
+      return await s3client.upload(
+         {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: data,
+         }
+      ).promise();
+   } catch (err) {
+      return err;
+   };
 };
 
 module.exports = uploadCacheFile;
