@@ -32,7 +32,6 @@ describe("uploadCacheFile", () => {
         describe("pathToFile", () => {
             
             test("missing pathToFile parameter.", async () => {
-                // Failing when not on watch mode?
                 const bucketName = process.env.AWS_BUCKET_NAME;
                 const pathToFile = undefined;
                 const keyName = `test-${new Date().toISOString()}.json`;
