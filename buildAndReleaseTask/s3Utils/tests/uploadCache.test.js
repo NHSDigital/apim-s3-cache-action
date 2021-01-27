@@ -39,7 +39,7 @@ describe("uploadCacheFile", () => {
 
                 const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
-                expect(error.message).toBe("The \"path\" argument must be one of type string, Buffer, or URL. Received type undefined");
+                expect(error.message).toBe("The \"path\" argument must be of type string.");
             });
 
             test("invalid pathToFile path.", async () => {

@@ -10,8 +10,9 @@ const uploadCacheFile = async (pathToFile, credentials, bucketName, keyName) => 
          s3ForcePathStyle: true,
       });
 
+      if (!pathToFile) throw TypeError("The \"path\" argument must be of type string.");
       const fileStream = fs.createReadStream(pathToFile);
-
+      
       return await s3client.upload(
          {
             Bucket: bucketName,

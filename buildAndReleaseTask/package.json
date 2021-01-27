@@ -26,6 +26,7 @@
     "aws-sdk": "^2.829.0",
     "axios": "^0.21.1",
     "azure-pipelines-task-lib": "^3.0.6-preview.1",
+    "docker": "^1.0.0",
     "dotenv": "^8.2.0",
     "fs": "^0.0.1-security",
     "jest": "^26.6.3",
