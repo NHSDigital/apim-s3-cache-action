@@ -13,5 +13,6 @@ services:
     ports:
       - "4566:4566"
     volumes:
-      - './.localstack:/tmp/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - ./aws:/docker-entrypoint-initaws.d
+      - ./.localstack:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
