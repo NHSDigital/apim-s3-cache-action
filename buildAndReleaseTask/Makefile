@@ -8,9 +8,11 @@ SHELL := /bin/bash
 install:
 	npm install
 
-init-local:
-	npm run localstack:config
-	npm run localstack:up
+build:
+	docker-compose up -d localstack
 
-test:
+test: build
 	npm test
+
+test-watch: build
+	npm run test-watch

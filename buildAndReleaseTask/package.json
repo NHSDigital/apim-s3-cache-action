@@ -6,9 +6,6 @@
   "scripts": {
     "test": "jest",
     "test-watch": "jest --watch",
-    "localstack:init": "npm run localstack:up && docker logs localstack -f",
-    "localstack:up": "docker-compose up -d",
-    "localstack:config": "aws --endpoint-url=http://localhost:4566 s3 mb s3://localstack-bucket && aws --endpoint-url=http://localhost:4566 s3api put-bucket-acl --bucket localstack-bucket --acl public-read",
     "test-upload": "node s3Utils/tests/test-upload.js"
   },
   "repository": {

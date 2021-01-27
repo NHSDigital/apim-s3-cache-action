@@ -4,6 +4,7 @@ services:
     image: localstack/localstack:latest
     container_name: localstack
     restart: always
+    command: npm test
     environment:
       - SERVICES=s3
       - DEBUG=1

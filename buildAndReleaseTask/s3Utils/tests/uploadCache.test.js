@@ -1,20 +1,19 @@
-const fs = require("fs");
 const path = require("path");
-require('dotenv').config();
 
 const uploadCacheFile = require("../uploadCache");
 
 const credentials = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_KEY,
- };   
+    accessKeyId: "test-id",
+    secretAccessKey: "test-secret",
+};
+let bucketName = "localstack-bucket"
+process.env.AWS_ENV = "localstack"
 
 describe("uploadCacheFile", () => {
 
     describe("happy path", () => {
 
         test("successfully uploads cache to s3 bucket.", async () => {
-            const bucketName = process.env.AWS_BUCKET_NAME;
             const pathToFile = path.resolve(__dirname, "testData/test.json");
             const keyName = `test-${new Date().toISOString()}.json`;
 
@@ -32,7 +31,6 @@ describe("uploadCacheFile", () => {
         describe("pathToFile", () => {
             
             test("missing pathToFile parameter.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
                 const pathToFile = undefined;
                 const keyName = `test-${new Date().toISOString()}.json`;
 
@@ -42,7 +40,6 @@ describe("uploadCacheFile", () => {
             });
 
             test("invalid pathToFile path.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
                 const pathToFile = "not-a-real-path";
                 const keyName = `test-${new Date().toISOString()}.json`;
 
@@ -54,12 +51,11 @@ describe("uploadCacheFile", () => {
         });
 
         describe("credentials", () => {
-
             beforeAll(() => { process.env.AWS_ENV = "not-localstack" });
             afterAll(() => { process.env.AWS_ENV = "localstack" });
 
             test("missing credentials.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
+
                 const pathToFile = path.resolve(__dirname, "testData/test.json");
                 const keyName = `test-${new Date().toISOString()}.json`;
                 const invalidCredentials = undefined;
@@ -72,7 +68,6 @@ describe("uploadCacheFile", () => {
         });
 
         describe("bucket", () => {
-
             test("bucket does not exist.", async () => {
                 const bucketName = "bucket-doesnt-exist";
                 const pathToFile = path.resolve(__dirname, "testData/test.json");
@@ -98,7 +93,6 @@ describe("uploadCacheFile", () => {
         describe("key", () => {
 
             test("missing key parameter.", async () => {
-                const bucketName = process.env.AWS_BUCKET_NAME;
                 const pathToFile = path.resolve(__dirname, "testData/test.json");
                 const keyName = undefined;
 
