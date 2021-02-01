@@ -4,7 +4,6 @@ services:
     image: localstack/localstack:latest
     container_name: localstack
     restart: always
-    command: npm test
     environment:
       - SERVICES=s3
       - DEBUG=1
@@ -13,6 +12,4 @@ services:
     ports:
       - "4566:4566"
     volumes:
-      - ./aws:/docker-entrypoint-initaws.d
       - ./.localstack:/tmp/localstack
-      - /var/run/docker.sock:/var/run/docker.sock

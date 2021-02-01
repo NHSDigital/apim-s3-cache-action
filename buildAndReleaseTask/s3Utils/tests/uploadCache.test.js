@@ -1,4 +1,5 @@
 const path = require("path");
+const AWS = require("aws-sdk");
 
 const uploadCacheFile = require("../uploadCache");
 
@@ -6,16 +7,31 @@ const credentials = {
     accessKeyId: "test-id",
     secretAccessKey: "test-secret",
 };
-let bucketName = "localstack-bucket"
+const bucketName = "test-bucket";
+
 process.env.AWS_ENV = "localstack"
 
 describe("uploadCacheFile", () => {
+
+    beforeAll(async () => {
+        const endpoint = "http://localhost:4566";
+        const s3client = new AWS.S3({
+            credentials,
+            endpoint,
+            s3ForcePathStyle: true,
+         });
+
+        await s3client.createBucket({Bucket: bucketName}, (err, data) => {
+            if (err) console.log(err, err.stack); // an error occurred
+            else     console.log(data);           // successful response
+        }).promise();
+    });
 
     describe("happy path", () => {
 
         test("successfully uploads cache to s3 bucket.", async () => {
             const pathToFile = path.resolve(__dirname, "testData/test.json");
-            const keyName = `test-${new Date().toISOString()}.json`;
+            const keyName = `test-happy-path.json`;
 
             const resp = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
@@ -36,7 +52,7 @@ describe("uploadCacheFile", () => {
 
                 const error = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
-                expect(error.message).toBe("The \"path\" argument must be of type string.");
+                expect(error.message).toBe("Missing pathToFile. A pathToFile must be provided.");
             });
 
             test("invalid pathToFile path.", async () => {
@@ -51,8 +67,6 @@ describe("uploadCacheFile", () => {
         });
 
         describe("credentials", () => {
-            beforeAll(() => { process.env.AWS_ENV = "not-localstack" });
-            afterAll(() => { process.env.AWS_ENV = "localstack" });
 
             test("missing credentials.", async () => {
 
@@ -62,7 +76,7 @@ describe("uploadCacheFile", () => {
     
                 const error = await uploadCacheFile(pathToFile, invalidCredentials, bucketName, keyName);
     
-                expect(error.message).toBe("Access Denied");
+                expect(error.message).toBe("Missing credentials. Credentials must be provided.");
             });
 
         });
