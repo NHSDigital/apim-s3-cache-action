@@ -8,14 +8,8 @@ SHELL := /bin/bash
 install:
 	npm install
 
-up:
-	docker-compose up -d localstack
-
-down:
-	docker-compose down
-
-test: up
+test:
 	npm test
 
-test-watch: up
+test-watch:
 	npm run test-watch
