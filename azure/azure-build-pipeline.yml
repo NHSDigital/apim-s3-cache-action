@@ -56,6 +56,10 @@ stages:
             displayName: install dependencies
 
           - bash: |
+              make up
+              curl http://localhost:4566
+
+          - bash: |
               make test
               make down
             displayName: run s3 tests
