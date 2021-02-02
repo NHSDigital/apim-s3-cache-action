@@ -7,10 +7,10 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-docker-compose = "^1.25.5"
 
 [tool.poetry.dev-dependencies]
 jq = "^1.0.1"
+docker-compose = "^1.25.5"
 
 [tool.pytest.ini_options]
 python_files = "*_tests.py test_*.py"

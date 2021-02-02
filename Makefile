@@ -6,8 +6,8 @@ SHELL := /bin/bash
 ####################################################################################################
 
 install:
-	poetry install
 	make -C s3CacheTask install
+	poetry install
 
 up:
 	docker-compose up -d localstack
