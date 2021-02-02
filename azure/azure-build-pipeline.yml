@@ -58,7 +58,7 @@ stages:
           - bash: |
               make up
               poetry run docker-compose ps
-              sleep 3
+              poetry run docker-compose logs localstack | tail
               curl http://localhost:4566
 
           - bash: |
