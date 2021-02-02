@@ -57,6 +57,7 @@ stages:
 
           - bash: |
               make up
+              poetry run docker-compose ps
               curl http://localhost:4566
 
           - bash: |
