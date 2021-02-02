@@ -48,9 +48,9 @@ stages:
               versionSpec: "3.8"
 
           - task: NodeTool@0
-            displayName: "Use Node 12"
+            displayName: "Use Node 15"
             inputs:
-              versionSpec: '12.x'
+              versionSpec: '15.3'
 
           - bash: make install
             displayName: install dependencies
