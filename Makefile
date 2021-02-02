@@ -17,6 +17,3 @@ down:
 
 test: up
 	make -C s3CacheTask test
-
-test-watch: up
-	make -C s3CacheTask test-watch

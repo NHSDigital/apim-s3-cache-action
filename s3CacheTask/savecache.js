@@ -5,7 +5,7 @@ const run = async () => {
     try {
         console.log('Simulate: Saving Cache');
         // tl - get path and credentials, bucketName, keyName from pipeline input
-        // const resp = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
+        // const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
         // tl.setResult(tl.TaskResult.Succeeded, `{resp["Key"] successfully uploaded to {resp["Bucket"]}}`);
     }
     catch (err) {
