@@ -42,10 +42,8 @@ stages:
               echo working directory: $(System.DefaultWorkingDirectory)
             displayName: print aws info
 
-          - bash: make install
-            displayName: install dependencies
-
           - bash: |
+              make install
               make test
               make down
             displayName: run s3 tests
