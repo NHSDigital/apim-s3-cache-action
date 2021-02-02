@@ -59,6 +59,7 @@ stages:
               make down && make up
               poetry run docker-compose ps
               poetry run docker-compose logs localstack | tail
+              poetry run docker-compose-wait -w
               curl http://localhost:4566
 
           - bash: |
