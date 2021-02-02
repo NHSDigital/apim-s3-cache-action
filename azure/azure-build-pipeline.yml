@@ -42,13 +42,13 @@ stages:
               echo working directory: $(System.DefaultWorkingDirectory)
             displayName: print aws info
 
-          - bash: make install
-            displayName: install dependencies
-
           - task: UsePythonVersion@0
             displayName: "Use Python 3.8"
             inputs:
               versionSpec: "3.8"
+
+          - bash: make install
+            displayName: install dependencies
 
           - bash: |
               make test
