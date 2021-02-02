@@ -17,10 +17,10 @@ __pycache__/
 *.orig
 *.squashfs
 *.retry
-.env
-.localstack/
-s3Utils/tests/test-upload.js
-s3Utils/tests/testData/test.txt
+*.env
+s3CacheTask/.localstack/
+s3CacheTask/s3Utils/tests/test-upload.js
+s3CacheTask/s3Utils/tests/testData/test.txt
 
 # node
 node_modules/

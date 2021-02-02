@@ -7,9 +7,6 @@ services:
     environment:
       - SERVICES=s3
       - DEBUG=1
-#      - DATA_DIR=/tmp/localstack/data
       - EDGE_PORT=4566
     ports:
       - "4566:4566"
-#    volumes:
-#      - ./.localstack:/tmp/localstack

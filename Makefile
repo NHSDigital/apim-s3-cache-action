@@ -7,7 +7,7 @@ SHELL := /bin/bash
 
 install:
 	poetry install
-	make -C buildAndReleaseTask install
+	make -C s3CacheTask install
 
 up:
 	docker-compose up -d localstack
@@ -16,7 +16,7 @@ down:
 	docker-compose down
 
 test: up
-	make -C buildAndReleaseTask test
+	make -C s3CacheTask test
 
 test-watch: up
-	make -C buildAndReleaseTask test-watch
+	make -C s3CacheTask test-watch

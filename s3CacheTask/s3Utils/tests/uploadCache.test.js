@@ -22,8 +22,7 @@ describe("uploadCacheFile", () => {
          });
 
         await s3client.createBucket({Bucket: bucketName}, (err, data) => {
-            if (err) console.log(err, err.stack); // an error occurred
-            else     console.log(data);           // successful response
+            if (err) console.log(err.message);
         }).promise();
     });
 
@@ -31,7 +30,7 @@ describe("uploadCacheFile", () => {
 
         test("successfully uploads cache to s3 bucket.", async () => {
             const pathToFile = path.resolve(__dirname, "testData/test.json");
-            const keyName = `test-happy-path.json`;
+            const keyName = `test-${new Date().toISOString()}.json`;
 
             const resp = await uploadCacheFile(pathToFile, credentials, bucketName, keyName);
 
