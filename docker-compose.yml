@@ -7,6 +7,10 @@ services:
       - SERVICES=s3
       - DEBUG=1
       - EDGE_PORT=4566
+    healthcheck:
+      test: awslocal s3 list-buckets
+      interval: 3s
+      timeout: 10s
     ports:
       - '4566:4566'
       - '8080:8080'
