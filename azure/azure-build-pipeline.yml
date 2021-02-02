@@ -55,10 +55,11 @@ stages:
           - bash: make install
             displayName: install dependencies
 
-          # - bash: |
-          #     make up
-          #     poetry run docker-compose ps
-          #     curl http://localhost:4566
+          - bash: |
+              make up
+              poetry run docker-compose ps
+              sleep 3
+              curl http://localhost:4566
 
           - bash: |
               make test
