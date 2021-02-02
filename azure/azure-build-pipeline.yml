@@ -56,7 +56,7 @@ stages:
             displayName: install dependencies
 
           - bash: |
-              make up
+              make down && make up
               poetry run docker-compose ps
               poetry run docker-compose logs localstack | tail
               curl http://localhost:4566

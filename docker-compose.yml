@@ -3,7 +3,6 @@ services:
   localstack:
     image: localstack/localstack:latest
     container_name: localstack
-    restart: always
     environment:
       - SERVICES=s3
       - DEBUG=1
