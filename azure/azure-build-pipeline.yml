@@ -42,8 +42,15 @@ stages:
               echo working directory: $(System.DefaultWorkingDirectory)
             displayName: print aws info
 
+          - task: UsePythonVersion@0
+            displayName: "Use Python 3.8"
+            inputs:
+              versionSpec: "3.8"
+
+          - bash: make install
+            displayName: install dependencies
+
           - bash: |
-              make install
               make test
               make down
             displayName: run s3 tests
