@@ -56,12 +56,7 @@ stages:
             displayName: install dependencies
 
           - bash: |
-              make down && make up
-              poetry run docker-compose ps
-              poetry run docker-compose logs localstack | tail
-              curl http://localhost:4566
-
-          - bash: |
+              make down
               make test
               make down
             displayName: run s3 tests
