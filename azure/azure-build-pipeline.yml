@@ -57,7 +57,9 @@ stages:
 
           - bash: |
               make down
-              TEST_RESULT=$(make test)
+              make test
+              exit_code=$?
+              echo ${exit_code}
               make down
-              echo "${TEST_RESULT}"
+              exit ${exit_code}
             displayName: run s3 tests
