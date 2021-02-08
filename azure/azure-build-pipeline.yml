@@ -40,7 +40,7 @@ stages:
               echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
               echo sudo su - ubuntu
               echo working directory: $(System.DefaultWorkingDirectory)
-            displayName: print aws info
+            displayName: Print AWS info
 
           - task: UsePythonVersion@0
             displayName: "Use Python 3.8"
@@ -53,13 +53,13 @@ stages:
               versionSpec: '13.x'
 
           - bash: make install
-            displayName: install dependencies
+            displayName: Install dependencies
 
           - bash: |
               make down
               make test
               exit_code=$?
-              echo ${exit_code}
+              echo Exit code - ${exit_code}
               make down
               exit ${exit_code}
-            displayName: run s3 tests
+            displayName: Run s3 tests

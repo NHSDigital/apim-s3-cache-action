@@ -36,7 +36,6 @@ describe("uploadCacheFile", () => {
 
             expect(resp["Bucket"]).toBe(bucketName);
             expect(resp["Key"]).toBe(keyName);
-            expect(true).toBe(false); // INTENTIONAL TEST FAIL
         });
 
     });
