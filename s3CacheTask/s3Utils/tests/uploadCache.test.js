@@ -18,7 +18,7 @@ describe("uploadCacheFile", () => {
         const s3client = new AWS.S3({
             credentials,
             endpoint,
-            s3ForcePathStyle: true,
+            s3ForcePathStyle: true
          });
 
         await s3client.createBucket({Bucket: bucketName}, (err, data) => {
