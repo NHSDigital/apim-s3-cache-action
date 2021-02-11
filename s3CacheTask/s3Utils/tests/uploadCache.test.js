@@ -11,6 +11,10 @@ const bucketName = "test-bucket";
 
 process.env.AWS_ENV = "localstack"
 
+global.console = {
+    log: jest.fn()
+}
+
 describe("uploadCacheFile", () => {
 
     beforeAll(async () => {
@@ -52,6 +56,17 @@ describe("uploadCacheFile", () => {
 
     describe("error scenarios", () => {
         
+        test("logs warning for ambient credentials when none provided", async () => {
+            const targetPath = path.resolve(__dirname, "testData/test.json");
+            const keyName = `test-${new Date().toISOString()}.json`;
+            const noCredentials = undefined
+
+            await uploadCacheFile(targetPath, noCredentials, bucketName, keyName);
+        
+            expect(global.console.log).toHaveBeenCalledWith(
+                "No credentials provided. Using ambient credentials."
+            );
+        })
 
         describe("targetPath", () => {
             
