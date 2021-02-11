@@ -75,21 +75,6 @@ describe("uploadCacheFile", () => {
 
         });
 
-        describe("credentials", () => {
-
-            test("missing credentials.", async () => {
-
-                const targetPath = path.resolve(__dirname, "testData/test.json");
-                const keyName = `test-${new Date().toISOString()}.json`;
-                const invalidCredentials = undefined;
-    
-                const error = await uploadCacheFile(targetPath, invalidCredentials, bucketName, keyName);
-    
-                expect(error.message).toBe("Missing credentials. Credentials must be provided.");
-            });
-
-        });
-
         describe("bucket", () => {
             test("bucket does not exist.", async () => {
                 const bucketName = "bucket-doesnt-exist";
