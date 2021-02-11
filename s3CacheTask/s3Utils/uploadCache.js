@@ -1,5 +1,6 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
+const tar = require("tar-fs");
 
 const uploadCacheFile = async (targetPath, credentials, bucketName, keyName) => {
    try {
@@ -13,13 +14,14 @@ const uploadCacheFile = async (targetPath, credentials, bucketName, keyName) => 
          s3ForcePathStyle: useLocal
       });
 
-      const fileStream = fs.createReadStream(targetPath);
+      const pathIsDir = fs.statSync(targetPath).isDirectory();
+      const stream = pathIsDir ? tar.pack(targetPath) : fs.createReadStream(targetPath);
       
       return await s3client.upload(
          {
             Bucket: bucketName,
             Key: keyName,
-            Body: fileStream,
+            Body: stream,
          }
       ).promise();
 

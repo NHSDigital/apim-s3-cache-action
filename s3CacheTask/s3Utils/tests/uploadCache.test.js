@@ -28,9 +28,19 @@ describe("uploadCacheFile", () => {
 
     describe("happy path", () => {
 
-        test("successfully uploads cache to s3 bucket.", async () => {
+        test("successfully uploads file to s3 bucket.", async () => {
             const targetPath = path.resolve(__dirname, "testData/test.json");
             const keyName = `test-${new Date().toISOString()}.json`;
+
+            const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+
+            expect(resp["Bucket"]).toBe(bucketName);
+            expect(resp["Key"]).toBe(keyName);
+        });
+
+        test("successfully uploads directory to s3 bucket.", async () => {
+            const targetPath = path.resolve(__dirname, "testData");
+            const keyName = `testData-${new Date().toISOString()}`;
 
             const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
 
@@ -60,7 +70,7 @@ describe("uploadCacheFile", () => {
 
                 const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
 
-                expect(error.message).toBe("ENOENT: no such file or directory, open 'not-a-real-path'");
+                expect(error.message).toStrictEqual(expect.stringContaining("no such file or directory"));
             });
 
         });
