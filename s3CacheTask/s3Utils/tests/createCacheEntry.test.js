@@ -1,7 +1,7 @@
 const path = require("path");
 const AWS = require("aws-sdk");
 
-const uploadCacheFile = require("../uploadCache");
+const createCacheEntry = require("../createCacheEntry");
 
 const credentials = {
     accessKeyId: "test-id",
@@ -15,7 +15,7 @@ global.console = {
     log: jest.fn()
 }
 
-describe("uploadCacheFile", () => {
+describe("createCacheEntry", () => {
 
     beforeAll(async () => {
         const endpoint = "http://localhost:4566";
@@ -36,7 +36,7 @@ describe("uploadCacheFile", () => {
             const targetPath = path.resolve(__dirname, "testData/test.json");
             const keyName = `test-${new Date().toISOString()}.json`;
 
-            const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+            const resp = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
             expect(resp["Bucket"]).toBe(bucketName);
             expect(resp["Key"]).toBe(keyName);
@@ -46,7 +46,7 @@ describe("uploadCacheFile", () => {
             const targetPath = path.resolve(__dirname, "testData");
             const keyName = `testData-${new Date().toISOString()}`;
 
-            const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+            const resp = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
             expect(resp["Bucket"]).toBe(bucketName);
             expect(resp["Key"]).toBe(keyName);
@@ -61,7 +61,7 @@ describe("uploadCacheFile", () => {
             const keyName = `test-${new Date().toISOString()}.json`;
             const noCredentials = undefined
 
-            await uploadCacheFile(targetPath, noCredentials, bucketName, keyName);
+            await createCacheEntry(targetPath, noCredentials, bucketName, keyName);
         
             expect(global.console.log).toHaveBeenCalledWith(
                 "No credentials provided. Using ambient credentials."
@@ -74,7 +74,7 @@ describe("uploadCacheFile", () => {
                 const targetPath = undefined;
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+                const error = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("Missing targetPath. A targetPath must be provided.");
             });
@@ -83,7 +83,7 @@ describe("uploadCacheFile", () => {
                 const targetPath = "not-a-real-path";
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+                const error = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
                 expect(error.message).toStrictEqual(expect.stringContaining("no such file or directory"));
             });
@@ -96,7 +96,7 @@ describe("uploadCacheFile", () => {
                 const targetPath = path.resolve(__dirname, "testData/test.json");
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+                const error = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("The specified bucket does not exist");
             });
@@ -106,7 +106,7 @@ describe("uploadCacheFile", () => {
                 const targetPath = path.resolve(__dirname, "testData/test.json");
                 const keyName = `test-${new Date().toISOString()}.json`;
 
-                const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+                const error = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("Missing required key 'Bucket' in params");
             });
@@ -119,7 +119,7 @@ describe("uploadCacheFile", () => {
                 const targetPath = path.resolve(__dirname, "testData/test.json");
                 const keyName = undefined;
 
-                const error = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
+                const error = await createCacheEntry(targetPath, credentials, bucketName, keyName);
 
                 expect(error.message).toBe("Missing required key 'Key' in params");
             });

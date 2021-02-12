@@ -2,7 +2,7 @@ const AWS = require("aws-sdk");
 const fs = require("fs");
 const tar = require("tar-fs");
 
-const uploadCacheFile = async (targetPath, credentials, bucketName, keyName) => {
+const createCacheEntry = async (targetPath, credentials, bucketName, keyName) => {
    try {
       const useLocal = process.env.AWS_ENV === "localstack";
       const endpoint = useLocal ? "http://localhost:4566" : undefined;
@@ -30,4 +30,4 @@ const uploadCacheFile = async (targetPath, credentials, bucketName, keyName) => 
    };
 };
 
-module.exports = uploadCacheFile;
+module.exports = createCacheEntry;
