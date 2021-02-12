@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
 const tar = require("tar-fs");
+const tarStream = require("tar-stream");
 
 const createCacheEntry = async (targetPath, credentials, bucketName, keyName) => {
    try {
@@ -15,7 +16,18 @@ const createCacheEntry = async (targetPath, credentials, bucketName, keyName) =>
       });
 
       const pathIsDir = fs.statSync(targetPath).isDirectory();
-      const stream = pathIsDir ? tar.pack(targetPath) : fs.createReadStream(targetPath);
+      let stream;
+
+      if (pathIsDir) {
+         stream = tar.pack(targetPath);
+      } else {
+         const pathArr = targetPath.split("/");
+         const fileName = pathArr[pathArr.length -1];
+         const tarStrPacked = await tarStream.pack();
+         await tarStrPacked.entry({name: fileName}, fs.readFileSync(targetPath));
+         tarStrPacked.finalize();
+         stream = tarStrPacked;
+      }
       
       return await s3client.upload(
          {
@@ -23,7 +35,7 @@ const createCacheEntry = async (targetPath, credentials, bucketName, keyName) =>
             Key: keyName,
             Body: stream,
          }
-      ).promise();
+      ).promise()
 
    } catch (err) {
       return err;
