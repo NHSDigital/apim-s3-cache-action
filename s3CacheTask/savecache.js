@@ -4,9 +4,7 @@ const uploadCache = require("./s3Utils/uploadCache");
 const run = async () => {
     try {
         console.log('Simulate: Saving Cache');
-        // tl - get path and credentials, bucketName, keyName from pipeline input
-        // const resp = await uploadCacheFile(targetPath, credentials, bucketName, keyName);
-        // tl.setResult(tl.TaskResult.Succeeded, `{resp["Key"] successfully uploaded to {resp["Bucket"]}}`);
+        // TO DO - Use cache action in extention.
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
