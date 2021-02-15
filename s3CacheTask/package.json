@@ -25,6 +25,7 @@
     "docker": "^1.0.0",
     "dotenv": "^8.2.0",
     "fs": "^0.0.1-security",
+    "md5-file": "^5.0.0",
     "path": "^0.12.7",
     "tar-fs": "^2.1.1",
     "tar-stream": "^2.2.0"
