@@ -1,0 +1,16 @@
+version: '3.6'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - EDGE_PORT=4566
+    healthcheck:
+      test: awslocal s3 ls
+      interval: 3s
+      timeout: 10s
+    ports:
+      - '4566:4566'
+      - '8080:8080'

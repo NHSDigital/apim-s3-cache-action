@@ -1,0 +1,65 @@
+name: "$(SourceBranchName)+$(BuildID)"
+
+trigger:
+  branches:
+    include:
+      - tags/refs/v*
+  tags:
+    include:
+      - v*
+
+pr:
+  branches:
+    include: ['*']
+
+pool:
+  name: 'AWS-ECS'
+
+
+stages:
+
+  - stage: build
+    displayName: Build and Test
+    jobs:
+      - job: build
+        displayName: Build and Test
+        timeoutInMinutes: 40
+
+        pool:
+          name: 'AWS-ECS'
+
+        workspace:
+          clean: all
+
+        steps:
+          - checkout: self
+
+          - bash: |
+              instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+              echo instance-id: "${instance_id}"
+              echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+              echo sudo su - ubuntu
+              echo working directory: $(System.DefaultWorkingDirectory)
+            displayName: Print AWS info
+
+          - task: UsePythonVersion@0
+            displayName: "Use Python 3.8"
+            inputs:
+              versionSpec: "3.8"
+
+          - task: NodeTool@0
+            displayName: "Use Node 13"
+            inputs:
+              versionSpec: '13.x'
+
+          - bash: make install
+            displayName: Install dependencies
+
+          - bash: |
+              make down
+              make test
+              exit_code=$?
+              echo Exit code - ${exit_code}
+              make down
+              exit ${exit_code}
+            displayName: Run s3 tests
