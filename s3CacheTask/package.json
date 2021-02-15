@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test-watch": "jest --watch",
-    "test-upload": "node s3Utils/tests/test-upload.js"
+    "test-watch": "jest --watch"
   },
   "repository": {
     "type": "git",
