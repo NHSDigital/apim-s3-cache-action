@@ -14,6 +14,11 @@ const isPathyChar = (char) => {
 };
 
 
+const isPathyPart = (part) => {
+    return
+};
+
+
 const hashPartIfPath = (part, workingDir) => {
     const isPath = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
 
@@ -47,4 +52,4 @@ const createCacheKey = (key, workingDir) => {
 //     createCacheKey(`"test data" | tests | testData`,
 //     path.resolve(__dirname, 'tests')));
 
-module.exports = { isPathyChar, hashPartIfPath, createCacheKey };
+module.exports = { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey };
