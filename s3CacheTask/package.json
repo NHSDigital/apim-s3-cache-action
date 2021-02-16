@@ -20,12 +20,10 @@
   "homepage": "https://github.com/NHSDigital/apim-s3-cache-action#readme",
   "dependencies": {
     "aws-sdk": "^2.829.0",
-    "axios": "^0.21.1",
     "azure-pipelines-task-lib": "^3.0.6-preview.1",
+    "crypto": "^1.0.1",
     "docker": "^1.0.0",
-    "dotenv": "^8.2.0",
     "fs": "^0.0.1-security",
-    "md5-file": "^5.0.0",
     "path": "^0.12.7",
     "tar-fs": "^2.1.1",
     "tar-stream": "^2.2.0"
