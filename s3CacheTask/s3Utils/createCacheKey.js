@@ -24,36 +24,26 @@ const isPathyPart = (part) => {
 
 
 const hashPartIfPath = (part, workingDir) => {
-    const isPath = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
+    if (!isPathyPart(part)) return part;
 
-    if (isPath) {
-        let formatPart = part;
-        if (fs.statSync(isPath).isFile()) { // May not need if check here
-            const hash = crypto.createHash('sha256');
-            hash.update(isPath);
-            formatPart = hash.digest('hex');
-        }
-        return formatPart;
-    } else {
-        return part;
-    };
+    const pathPart = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p)) || part;
+    const hash = crypto.createHash('sha256');
+
+    hash.update(pathPart);
+
+    return hash.digest('hex');
 };
 
 
 const createCacheKey = (key, workingDir) => {
     const keyParts = key.split('|').map(part => part.trim());
-
     const keyPartsHashed = keyParts.map(part => hashPartIfPath(part, workingDir));
-
     const joinedkeyParts = keyPartsHashed.join('|');
-    console.log(joinedkeyParts)
+
     const hashedKey = crypto.createHash('sha256').update(joinedkeyParts).digest("hex");
 
     return hashedKey;
 };
 
-// console.log(
-//     createCacheKey(`"test data" | tests | testData`,
-//     path.resolve(__dirname, 'tests')));
 
 module.exports = { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey };
