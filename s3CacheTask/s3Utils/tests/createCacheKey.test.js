@@ -11,6 +11,9 @@ describe('isPathyChar', () => {
     // Any way to test a more comprensive list?
     test('returns true for valid path character', () => {
         const validPathChars = ['*', '?', '[', ']', '/', '\\', ':', '1', '0', 'A', 'a' ];
+        // Ensure escaped character
+        expect("\\".length).toBe(1);
+
         validPathChars.forEach((c) => {
             expect(isPathyChar(c)).toBe(true);
         });
@@ -18,9 +21,32 @@ describe('isPathyChar', () => {
 });
 
 describe('isPathyPart', () => {
-    // Returns false for string literal
-    // Returns false if any character isn't a path char
-    // Returns false if last char is '.'
-    // Returns false if doesn't contain '.' && '/' && '\\'
-    // Returns true for path style examples
+    test('returns true for standard path syntax', () => {
+        expect(isPathyPart('foo/bar/foo.txt')).toBe(true);
+    });
+
+    test('returns true for windows path syntax', () => {
+        const windowsPath = '\\\\.\\C:\\Test\\Foo.txt';
+        // Ensure escaped characters
+        expect(windowsPath.length).toBe(19);
+        
+        expect(isPathyPart('foo/bar/foo.txt')).toBe(true);
+    });
+
+    test('returns false when part is string literal', () => {
+        expect(isPathyPart('"Foo"')).toBe(false);
+    });
+
+    test('returns false when contains an invalid path character', () => {
+        expect(isPathyPart('Foo "Bar" Foo')).toBe(false);
+        expect(isPathyPart('foo/<bar>/foo')).toBe(false);
+    });
+
+    test('returns false when part contains ".", "/" and "\\"', () => {
+        const examplePath = '\\foo/bar.txt';
+        // Ensure escaped character
+        expect(examplePath.length).toBe(12);
+
+        expect(isPathyPart(examplePath)).toBe(false);
+    });
 });

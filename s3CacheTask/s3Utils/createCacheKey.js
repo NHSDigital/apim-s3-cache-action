@@ -15,7 +15,11 @@ const isPathyChar = (char) => {
 
 
 const isPathyPart = (part) => {
-    return
+    if (part.startsWith('"') && part.endsWith('"')) return false;
+    // Below could be !['"', '<', '>', '|'].some(c => part.includes(c)) and not need isPathyChar?
+    if (part.split('').some(c => !isPathyChar(c))) return false;
+    if (part.includes('.') && part.includes('/') && part.includes('\\')) return false;
+    return true;
 };
 
 
