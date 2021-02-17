@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-// Perhaps a little explicit. Could just use invalidFileChars
+
 const isPathyChar = (char) => {
     const globChars = ['*', '?', '[', ']'];
     const pathChars = ['/', ':'];
@@ -16,7 +16,6 @@ const isPathyChar = (char) => {
 
 const isPathyPart = (part) => {
     if (part.startsWith('"') && part.endsWith('"')) return false;
-    // Below could be !['"', '<', '>', '|'].some(c => part.includes(c)) and not need isPathyChar?
     if (part.split('').some(c => !isPathyChar(c))) return false;
     if (part.includes('.') && part.includes('/') && part.includes('\\')) return false;
     return true;
