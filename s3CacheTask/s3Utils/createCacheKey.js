@@ -22,22 +22,36 @@ const isPathyPart = (part) => {
     return true;
 };
 
+const createHashFromFile = filePath => new Promise(resolve => {
+    const hash = crypto.createHash('sha256');
+    fs.createReadStream(filePath).on('data', data => hash.update(data)).on('end', () => resolve(hash.digest('hex')));
+});
 
-const hashPartIfPath = (part, workingDir) => {
+
+const hashPartIfPath = async (part, workingDir) => {
     if (!isPathyPart(part)) return part;
 
-    const pathPart = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p)) || part;
+    const pathExists = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
+
     const hash = crypto.createHash('sha256');
 
-    hash.update(pathPart);
+
+    if (pathExists && fs.statSync(pathExists).isFile()) {
+        const fileHash = await createHashFromFile(pathExists);
+
+        return fileHash;
+    } else {
+        hash.update(part);
+    }
+
 
     return hash.digest('hex');
 };
 
 
-const createCacheKey = (key, workingDir) => {
+const createCacheKey = async (key, workingDir) => {
     const keyParts = key.split('|').map(part => part.trim());
-    const keyPartsHashed = keyParts.map(part => hashPartIfPath(part, workingDir));
+    const keyPartsHashed = await Promise.all(keyParts.map((part) => hashPartIfPath(part, workingDir)));
     const joinedkeyParts = keyPartsHashed.join('|');
 
     const hashedKey = crypto.createHash('sha256').update(joinedkeyParts).digest("hex");
