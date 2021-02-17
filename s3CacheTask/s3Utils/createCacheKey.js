@@ -24,7 +24,9 @@ const isPathyPart = (part) => {
 
 const createHashFromFile = filePath => new Promise(resolve => {
     const hash = crypto.createHash('sha256');
-    fs.createReadStream(filePath).on('data', data => hash.update(data)).on('end', () => resolve(hash.digest('hex')));
+    fs.createReadStream(filePath)
+        .on('data', data => hash.update(data))
+        .on('end', () => resolve(hash.digest('hex')));
 });
 
 
@@ -35,15 +37,13 @@ const hashPartIfPath = async (part, workingDir) => {
 
     const hash = crypto.createHash('sha256');
 
-
     if (pathExists && fs.statSync(pathExists).isFile()) {
         const fileHash = await createHashFromFile(pathExists);
 
         return fileHash;
     } else {
         hash.update(part);
-    }
-
+    };
 
     return hash.digest('hex');
 };
