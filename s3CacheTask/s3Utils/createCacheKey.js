@@ -18,6 +18,7 @@ const isPathyPart = (part) => {
     if (part.startsWith('"') && part.endsWith('"')) return false;
     if (part.split('').some(c => !isPathyChar(c))) return false;
     if (part.includes('.') && part.includes('/') && part.includes('\\')) return false;
+    if (part.endsWith('.')) return false;
     return true;
 };
 

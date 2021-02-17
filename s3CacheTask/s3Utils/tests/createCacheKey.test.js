@@ -29,7 +29,7 @@ describe('isPathyPart', () => {
         const windowsPath = '\\\\.\\C:\\Test\\Foo.txt';
         // Ensure escaped characters
         expect(windowsPath.length).toBe(19);
-        
+
         expect(isPathyPart('foo/bar/foo.txt')).toBe(true);
     });
 
@@ -48,5 +48,9 @@ describe('isPathyPart', () => {
         expect(examplePath.length).toBe(12);
 
         expect(isPathyPart(examplePath)).toBe(false);
+    });
+
+    test('returns false when last character of part is "."', () => {
+        expect(isPathyPart("foo.")).toBe(false);
     });
 });
