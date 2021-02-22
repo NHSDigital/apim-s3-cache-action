@@ -1,4 +1,5 @@
 const { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey } = require('../createCacheKey');
+const mockFs = require('mock-fs');
 
 describe('isPathyChar', () => {
     test('returns false for invalid file characters', () => {
@@ -56,9 +57,6 @@ describe('isPathyPart', () => {
 });
 
 describe('hashPartIfPath', () => {
-    // returns hash of string if path to dir
-    // returns hash of file not string if path to file
-    // What happens if can't find workingDir?
     test('returns part unchanged if part starts and ends with double quote', async () => {
         const part = '"foo"';
         expect(await hashPartIfPath(part, __dirname)).toBe(part);
@@ -80,6 +78,33 @@ describe('hashPartIfPath', () => {
     test('returns part unchanged when ends with "."',async () => {
         const part = 'foo.';
         expect(await hashPartIfPath(part, __dirname)).toBe(part);
+    });
+
+    test('returns hash of string if part is a path to directory', async () => {
+        const part = 'foo/bar/foo';
+        const expectHash = '745c4d40f6253884c4474d332600718d2428b11d6c362659244c7e4fa3a0e46a';
+        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+    });
+
+    test('returns hash of string if path to file but file not in workingDir', async () => {
+        const part = 'foo/bar/foo.txt';
+        const expectHash = '089740ac2d3e5350a4e6bf309405c8130ca137a6aac457d3dabe552539fd7080';
+        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+    });
+
+    test('returns hash of file when file exists in workingDir', async () => {
+        mockFs({
+            'foo/bar': {
+                'foo.txt': 'bar'
+            }
+        });
+
+        const part = 'foo/bar/foo.txt';
+        const expectHash = 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9';
+
+        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+
+        mockFs.restore();
     });
 });
 
