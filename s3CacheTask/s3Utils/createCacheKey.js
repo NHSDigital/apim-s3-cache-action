@@ -60,5 +60,4 @@ const createCacheKey = async (key, workingDir) => {
     return hashedKey;
 };
 
-
 module.exports = { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey };

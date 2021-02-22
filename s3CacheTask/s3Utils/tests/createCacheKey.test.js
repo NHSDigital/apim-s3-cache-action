@@ -109,8 +109,19 @@ describe('hashPartIfPath', () => {
 });
 
 describe('createCacheKey', () => {
-    // returns key hashed to sha256.
-    // If input stays the same so should output
-    // What happens if can't find workingDir?
-    // What happens if invalid key type?
+    test('returned result is a valid sha256 hash', async () => {
+        const regex = /\b[A-Fa-f0-9]{64}\b/g;
+        const keyInput = '"foo" | foo/bar/foo | foo.txt';
+        const result = await createCacheKey(keyInput, __dirname);
+
+        expect(regex.test(result)).toBe(true);
+    });
+
+    test('returns the same result on each call', async () => {
+        const keyInput = '"foo" | foo/bar/foo | foo.txt';
+        const firstCall = await createCacheKey(keyInput, __dirname);
+        const secondCall = await createCacheKey(keyInput, __dirname);
+
+        expect(firstCall).toBe(secondCall);
+    });
 });
