@@ -1,5 +1,5 @@
-const { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey } = require('../createCacheKey');
 const mockFs = require('mock-fs');
+const { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey } = require('../createCacheKey');
 
 describe('isPathyChar', () => {
     test('returns false for invalid file characters', () => {
@@ -9,7 +9,6 @@ describe('isPathyChar', () => {
         });
     });
 
-    // Any way to test a more comprensive list?
     test('returns true for valid path character', () => {
         const validPathChars = ['*', '?', '[', ']', '/', '\\', ':', '1', '0', 'A', 'a' ];
         // Ensure escaped character
