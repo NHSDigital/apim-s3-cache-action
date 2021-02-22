@@ -22,6 +22,7 @@ const isPathyPart = (part) => {
     return true;
 };
 
+
 const createHashFromFile = filePath => new Promise(resolve => {
     const hash = crypto.createHash('sha256');
     fs.createReadStream(filePath)

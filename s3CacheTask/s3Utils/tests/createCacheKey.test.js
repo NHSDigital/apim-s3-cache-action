@@ -12,7 +12,7 @@ describe('isPathyChar', () => {
     test('returns true for valid path character', () => {
         const validPathChars = ['*', '?', '[', ']', '/', '\\', ':', '1', '0', 'A', 'a' ];
         // Ensure escaped character
-        expect("\\".length).toBe(1);
+        expect('\\'.length).toBe(1);
 
         validPathChars.forEach((c) => {
             expect(isPathyChar(c)).toBe(true);
@@ -51,6 +51,41 @@ describe('isPathyPart', () => {
     });
 
     test('returns false when last character of part is "."', () => {
-        expect(isPathyPart("foo.")).toBe(false);
+        expect(isPathyPart('foo.')).toBe(false);
     });
+});
+
+describe('hashPartIfPath', () => {
+    // returns hash of string if path to dir
+    // returns hash of file not string if path to file
+    // What happens if can't find workingDir?
+    test('returns part unchanged if part starts and ends with double quote', async () => {
+        const part = '"foo"';
+        expect(await hashPartIfPath(part, __dirname)).toBe(part);
+    });
+
+    test('returns part unchanged if part contains invalid path character',async () => {
+        const part = '<foo>';
+        expect(await hashPartIfPath(part, __dirname)).toBe(part);
+    });
+
+    test('returns part unchanged if part contains ".", "\" and "/"',async () => {
+        const part = '\\foo/bar.txt';
+        // Ensure escaped character
+        expect(part.length).toBe(12);
+
+        expect(await hashPartIfPath(part, __dirname)).toBe(part);
+    });
+
+    test('returns part unchanged when ends with "."',async () => {
+        const part = 'foo.';
+        expect(await hashPartIfPath(part, __dirname)).toBe(part);
+    });
+});
+
+describe('createCacheKey', () => {
+    // returns key hashed to sha256.
+    // If input stays the same so should output
+    // What happens if can't find workingDir?
+    // What happens if invalid key type?
 });
