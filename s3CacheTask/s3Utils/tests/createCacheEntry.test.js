@@ -23,9 +23,7 @@ describe('createCacheEntry', () => {
             s3ForcePathStyle: true
          });
 
-        await s3client.createBucket({Bucket: bucketName}, (err, data) => {
-            if (err) console.log(err.message);
-        }).promise();
+        await s3client.createBucket({Bucket: bucketName}).promise();
     });
 
     describe('happy path', () => {    

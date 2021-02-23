@@ -1,5 +1,6 @@
 const path = require('path');
 const AWS = require('aws-sdk');
+const fs = require('fs');
 const retrieveCacheEntry = require('../retrieveCacheEntry');
 const createCacheEntry = require('../createCacheEntry');
 const { createCacheKey } = require('../createCacheKey');
@@ -21,16 +22,28 @@ describe('retrieveCacheEntry', () => {
             s3ForcePathStyle: true
          });
 
-        await s3client.createBucket({Bucket: bucketName}).promise();
+         await s3client.createBucket({Bucket: bucketName}).promise();
     });
 
-    test('successfully retrieves entry from s3 bucket', async () => {
-        const targetPath = path.resolve(__dirname, 'testData/test.json');
-        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
-        await createCacheEntry(targetPath, credentials, bucketName, keyName);
+    describe('happy path', () => {
+        test('successfully retrieves buffer of file from s3 bucket', async () => {
+            const targetPath = path.resolve(__dirname, 'testData/test.json');
+            const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+            await createCacheEntry(targetPath, credentials, bucketName, keyName);
+    
+            const resp = await retrieveCacheEntry(keyName, bucketName, credentials);
+            
+            expect(Buffer.isBuffer(resp.Body)).toBe(true);
+        });
 
-        const resp = await retrieveCacheEntry(keyName, bucketName, credentials);
-        console.log(resp);
-        expect(true).toBe(false);
+        test('successfully retrieves buffer of directory from s3 bucket', async () => {
+            const targetPath = path.resolve(__dirname, 'testData');
+            const keyName = await createCacheKey('"test" | testData | testData', __dirname);
+            await createCacheEntry(targetPath, credentials, bucketName, keyName);
+    
+            const resp = await retrieveCacheEntry(keyName, bucketName, credentials);
+            
+            expect(Buffer.isBuffer(resp.Body)).toBe(true);
+        });
     });
 });

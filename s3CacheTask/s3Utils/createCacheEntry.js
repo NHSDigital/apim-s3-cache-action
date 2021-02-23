@@ -27,7 +27,7 @@ const createCacheEntry = async (targetPath, credentials, bucketName, keyName) =>
          await tarStrPacked.entry({name: fileName}, fs.readFileSync(targetPath));
          tarStrPacked.finalize();
          stream = tarStrPacked;
-      }
+      };
       
       return await s3client.upload(
          {
@@ -35,7 +35,7 @@ const createCacheEntry = async (targetPath, credentials, bucketName, keyName) =>
             Key: keyName,
             Body: stream,
          }
-      ).promise()
+      ).promise();
 
    } catch (err) {
       return err;
