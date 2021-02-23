@@ -15,5 +15,5 @@ up:
 down:
 	poetry run docker-compose down
 
-test: up
+test: down up
 	make -C s3CacheTask test
