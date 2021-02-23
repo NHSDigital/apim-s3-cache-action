@@ -52,7 +52,7 @@ describe('createCacheEntry', () => {
         test('logs warning for ambient credentials when none provided', async () => {
             const targetPath = path.resolve(__dirname, 'testData/test.json');
             const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
-            const noCredentials = undefined
+            const noCredentials = undefined;
 
             await createCacheEntry(targetPath, noCredentials, bucketName, keyName);
         

@@ -11,15 +11,13 @@ const retrieveCacheEntry = async (keyName, bucketName, credentials) => {
            s3ForcePathStyle: useLocal
         });
         
-        const resp = await s3client.getObject(
+        return await s3client.getObject(
            {
               Bucket: bucketName,
               Key: keyName
            }
         ).promise();
-
-        return resp;
-  
+        
      } catch (err) {
         return err;
      };
