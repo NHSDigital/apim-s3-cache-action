@@ -33,14 +33,16 @@ describe('extractCacheEntry', () => {
         await createCacheEntry(targetPath, credentials, bucketName, keyName);
         const { Body } = await retrieveCacheEntry(keyName, bucketName, credentials);
 
-        // mockFs({
-        //     'cacheFiles': {/** empty directory */}
-        // });
+        mockFs({
+            'cacheFiles': {/** empty directory */},
+            'node_modules': mockFs.load(path.resolve(__dirname, '../../node_modules')),
+            '/tmp/jest_rs': mockFs.load('/tmp/jest_rs')
+        });
 
-        extractCacheEntry(path.resolve(__dirname, 'cacheFiles'), keyName, Body);
+        extractCacheEntry('cacheFiles', keyName, Body);
 
-        expect(fs.existsSync(path.resolve(__dirname, 'cacheFiles', `${keyName}.tar`))).toBe(true);
+        expect(fs.existsSync(path.resolve('cacheFiles',  `${keyName}.tar`))).toBe(true);
 
-        // mockFs.restore();
+        mockFs.restore();
     });
 });
