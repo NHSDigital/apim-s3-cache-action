@@ -31,6 +31,11 @@ const createHashFromFile = filePath => new Promise(resolve => {
 });
 
 
+const createHashFromString = inputString => {
+    return crypto.createHash('sha256').update(inputString).digest("hex");
+};
+
+
 const hashPartIfPath = async (part, workingDir) => {
     if (!isPathyPart(part)) return part;
 
@@ -53,11 +58,8 @@ const hashPartIfPath = async (part, workingDir) => {
 const createCacheKey = async (key, workingDir) => {
     const keyParts = key.split('|').map(part => part.trim());
     const keyPartsHashed = await Promise.all(keyParts.map((part) => hashPartIfPath(part, workingDir)));
-    const joinedkeyParts = keyPartsHashed.join('|');
-
-    const hashedKey = crypto.createHash('sha256').update(joinedkeyParts).digest("hex");
-
-    return hashedKey;
+    
+    return keyPartsHashed.join('|');
 };
 
-module.exports = { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey };
+module.exports = { isPathyChar, isPathyPart, createHashFromString, hashPartIfPath, createCacheKey };

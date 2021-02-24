@@ -1,5 +1,10 @@
 const mockFs = require('mock-fs');
-const { isPathyChar, isPathyPart, hashPartIfPath, createCacheKey } = require('../createCacheKey');
+const { isPathyChar,
+        isPathyPart,
+        createHashFromString,
+        hashPartIfPath,
+        createCacheKey
+        } = require('../createCacheKey');
 
 describe('isPathyChar', () => {
     test('returns false for invalid file characters', () => {
@@ -107,13 +112,33 @@ describe('hashPartIfPath', () => {
     });
 });
 
-describe('createCacheKey', () => {
+describe('createHashFromString', () => {
     test('returned result is a valid sha256 hash', async () => {
-        const regex = /\b[A-Fa-f0-9]{64}\b/g;
-        const keyInput = '"foo" | foo/bar/foo | foo.txt';
-        const result = await createCacheKey(keyInput, __dirname);
+        const hashRegex = /^[A-Fa-f0-9]{64}$/g;
+        const keyExample = '"foo" | bar.';
+        const hashResult = createHashFromString(keyExample);
 
-        expect(regex.test(result)).toBe(true);
+        expect(hashRegex.test(hashResult)).toBe(true);
+    });
+});
+
+describe('createCacheKey', () => {
+    test('return string with same number of "|" separated parts', async () => {
+        const keyInput = '"foo" | foo/bar/foo | foo.txt';
+        const inputParts = keyInput.split('|').map(part => part.trim());
+        const keyOutput = await createCacheKey(keyInput, __dirname);
+        const outputParts = keyOutput.split('|').map(part => part.trim());
+
+        expect(inputParts.length).toBe(outputParts.length);
+    });
+
+    test('parts should be unchanged if not pathy', async () => {
+        const keyInput = '"foo" | foo/bar/foo | foo.txt';
+        const inputParts = keyInput.split('|').map(part => part.trim());
+        const keyOutput = await createCacheKey(keyInput, __dirname);
+        const outputParts = keyOutput.split('|').map(part => part.trim());
+
+        expect(inputParts[0]).toBe(outputParts[0]);
     });
 
     test('returns the same result on each call', async () => {

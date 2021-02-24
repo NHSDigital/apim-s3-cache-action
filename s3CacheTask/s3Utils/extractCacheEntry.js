@@ -1,4 +1,3 @@
-const mockFs = require('mock-fs');
 const fs = require('fs');
 const path = require('path');
 
