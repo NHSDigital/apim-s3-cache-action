@@ -16,11 +16,11 @@ const retrieveCacheEntry = async (keyName, bucketName, credentials) => {
               Bucket: bucketName,
               Key: keyName
            }
-        ).promise();
+        )
         
      } catch (err) {
         return err;
-     };
+     }
 };
 
 module.exports = retrieveCacheEntry;

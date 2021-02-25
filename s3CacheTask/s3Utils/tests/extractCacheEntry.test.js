@@ -15,6 +15,9 @@ const credentials = {
 };
 const bucketName = 'test-extract-bucket';
 
+const test_data_dir = '/testdata';
+const extract_dir = '/extract_location';
+
 describe('extractCacheEntry', () => {
     beforeAll(async () => {
         const endpoint = 'http://localhost:4566';
@@ -27,45 +30,40 @@ describe('extractCacheEntry', () => {
         await s3client.createBucket({Bucket: bucketName}).promise();
     });
 
-    test('successfully writes tarball to destination from cache buffer', async () => {
-        const targetPath = path.resolve(__dirname, 'testData/test.json');
-        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
-        await createCacheEntry(targetPath, credentials, bucketName, keyName);
-        const { Body } = await retrieveCacheEntry(keyName, bucketName, credentials);
+    beforeEach(function() {
+        let config = {};
+        config[extract_dir] = {/** empty directory */};
+        config[test_data_dir] = mockFs.load(path.resolve(__dirname, 'testData'), {recursive: true, lazy: false});
+        mockFs(config);
+    });
+    afterEach(mockFs.restore);
 
-        mockFs({
-            '/s3Utils/tests/cacheFiles': {/** empty directory */},
-            'node_modules': mockFs.load(path.resolve(__dirname, '../../node_modules')),
-            '/tmp/jest_rs': mockFs.load('/tmp/jest_rs')
-        });
 
-        extractCacheEntry(path.resolve(__dirname, '/s3Utils/tests/cacheFiles'), keyName, Body);
+    test('successfully extracts directory from tarball', async () => {
 
-        expect(fs.existsSync(path.resolve(__dirname, '/s3Utils/tests/cacheFiles', `${keyName}.tar`))).toBe(true);
+        const keyName = await createCacheKey(`"test" | testData | ${test_data_dir}`, __dirname);
+        let result = await createCacheEntry(`${test_data_dir}`, credentials, "NOTREAL", keyName);
 
-        mockFs.restore();
+        let body = await retrieveCacheEntry(keyName, bucketName, credentials);
+        await extractCacheEntry(extract_dir, keyName, body);
+
+        expect(fs.existsSync(`${extract_dir}/test.json`)).toBe(true);
+        expect(fs.existsSync(`${extract_dir}/testDataNested/test2.json`)).toBe(true);
+
+
     });
 
-    // test('successfully extracts file from tarball', async () => {
-    //     const targetPath = path.resolve(__dirname, 'testData/test.json');
-    //     const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
-    //     await createCacheEntry(targetPath, credentials, bucketName, keyName);
-    //     const { Body } = await retrieveCacheEntry(keyName, bucketName, credentials);
+    test('successfully extracts file from tarball', async () => {
 
-    //     // mockFs({
-    //     //     'cacheFiles': {/** empty directory */},
-    //     //     'node_modules': mockFs.load(path.resolve(__dirname, '../../node_modules')),
-    //     //     '/tmp/jest_rs': mockFs.load('/tmp/jest_rs')
-    //     // });
+        const keyName = await createCacheKey(`"test" | testData | ${test_data_dir}/test.json`, __dirname);
+        await createCacheEntry(`${test_data_dir}/test.json`, credentials, bucketName, keyName);
 
-    //     extractCacheEntry(path.resolve(__dirname, 'cacheFiles'), keyName, Body);
+        let body = await retrieveCacheEntry(keyName, bucketName, credentials);
+        await extractCacheEntry(extract_dir, keyName, body);
 
-    //     console.log(path.resolve(__dirname, 'cacheFiles', 'test.json'))
+        expect(fs.existsSync(`${extract_dir}/test.json`)).toBe(true);
 
-    //     expect(fs.existsSync(path.resolve(__dirname, 'cacheFiles', 'test.json'))).toBe(true);
 
-    //     // mockFs.restore();
-    // });
+    });
 
-    // Test successfully extracts directory from tarball
 });

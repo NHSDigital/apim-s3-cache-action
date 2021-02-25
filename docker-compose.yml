@@ -2,7 +2,6 @@ version: '3.6'
 services:
   localstack:
     image: localstack/localstack:latest
-    container_name: localstack
     environment:
       - SERVICES=s3
       - DEBUG=1
@@ -13,4 +12,3 @@ services:
       timeout: 10s
     ports:
       - '4566:4566'
-      - '8080:8080'
