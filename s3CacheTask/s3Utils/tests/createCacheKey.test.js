@@ -2,7 +2,7 @@ const mockFs = require('mock-fs');
 const { isPathyChar,
         isPathyPart,
         createHashFromString,
-        hashPartIfPath,
+        hashFileOrString,
         createCacheKey
         } = require('../createCacheKey');
 
@@ -60,40 +60,23 @@ describe('isPathyPart', () => {
     });
 });
 
-describe('hashPartIfPath', () => {
-    test('returns part unchanged if part starts and ends with double quote', async () => {
+describe('hashFileOrString', () => {
+    test('returns hash of string if part isnt pathy', async () => {
         const part = '"foo"';
-        expect(await hashPartIfPath(part, __dirname)).toBe(part);
-    });
-
-    test('returns part unchanged if part contains invalid path character',async () => {
-        const part = '<foo>';
-        expect(await hashPartIfPath(part, __dirname)).toBe(part);
-    });
-
-    test('returns part unchanged if part contains ".", "\" and "/"',async () => {
-        const part = '\\foo/bar.txt';
-        // Ensure escaped character
-        expect(part.length).toBe(12);
-
-        expect(await hashPartIfPath(part, __dirname)).toBe(part);
-    });
-
-    test('returns part unchanged when ends with "."',async () => {
-        const part = 'foo.';
-        expect(await hashPartIfPath(part, __dirname)).toBe(part);
+        const expectHash = 'b2213295d564916f89a6a42455567c87c3f480fcd7a1c15e220f17d7169a790b'
+        expect(await hashFileOrString(part, __dirname)).toBe(expectHash);
     });
 
     test('returns hash of string if part is a path to directory', async () => {
         const part = 'foo/bar/foo';
         const expectHash = '745c4d40f6253884c4474d332600718d2428b11d6c362659244c7e4fa3a0e46a';
-        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+        expect(await hashFileOrString(part, __dirname)).toBe(expectHash);
     });
 
     test('returns hash of string if path to file but file not in workingDir', async () => {
         const part = 'foo/bar/foo.txt';
         const expectHash = '089740ac2d3e5350a4e6bf309405c8130ca137a6aac457d3dabe552539fd7080';
-        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+        expect(await hashFileOrString(part, __dirname)).toBe(expectHash);
     });
 
     test('returns hash of file when file exists in workingDir', async () => {
@@ -106,7 +89,7 @@ describe('hashPartIfPath', () => {
         const part = 'foo/bar/foo.txt';
         const expectHash = 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9';
 
-        expect(await hashPartIfPath(part, __dirname)).toBe(expectHash);
+        expect(await hashFileOrString(part, __dirname)).toBe(expectHash);
 
         mockFs.restore();
     });
@@ -123,22 +106,13 @@ describe('createHashFromString', () => {
 });
 
 describe('createCacheKey', () => {
-    test('return string with same number of "|" separated parts', async () => {
+    test('return string with same number of "/" separated parts', async () => {
         const keyInput = '"foo" | foo/bar/foo | foo.txt';
         const inputParts = keyInput.split('|').map(part => part.trim());
         const keyOutput = await createCacheKey(keyInput, __dirname);
-        const outputParts = keyOutput.split('|').map(part => part.trim());
+        const outputParts = keyOutput.split('/').map(part => part.trim());
 
         expect(inputParts.length).toBe(outputParts.length);
-    });
-
-    test('parts should be unchanged if not pathy', async () => {
-        const keyInput = '"foo" | foo/bar/foo | foo.txt';
-        const inputParts = keyInput.split('|').map(part => part.trim());
-        const keyOutput = await createCacheKey(keyInput, __dirname);
-        const outputParts = keyOutput.split('|').map(part => part.trim());
-
-        expect(inputParts[0]).toBe(outputParts[0]);
     });
 
     test('returns the same result on each call', async () => {

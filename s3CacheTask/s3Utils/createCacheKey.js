@@ -36,30 +36,24 @@ const createHashFromString = inputString => {
 };
 
 
-const hashPartIfPath = async (part, workingDir) => {
-    if (!isPathyPart(part)) return part;
+const hashFileOrString = async (part, workingDir) => {
+    if (!isPathyPart(part)) return createHashFromString(part);
 
     const pathExists = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
 
-    const hash = crypto.createHash('sha256');
-
     if (pathExists && fs.statSync(pathExists).isFile()) {
-        const fileHash = await createHashFromFile(pathExists);
-
-        return fileHash;
+        return await createHashFromFile(pathExists);
     } else {
-        hash.update(part);
+        return createHashFromString(part);
     };
-
-    return hash.digest('hex');
 };
 
 
 const createCacheKey = async (key, workingDir) => {
     const keyParts = key.split('|').map(part => part.trim());
-    const keyPartsHashed = await Promise.all(keyParts.map((part) => hashPartIfPath(part, workingDir)));
+    const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
     
-    return keyPartsHashed.join('|');
+    return keyPartsHashed.join('/');
 };
 
-module.exports = { isPathyChar, isPathyPart, createHashFromString, hashPartIfPath, createCacheKey };
+module.exports = { isPathyChar, isPathyPart, createHashFromString, hashFileOrString, createCacheKey };
