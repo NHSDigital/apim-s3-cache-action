@@ -1,6 +1,5 @@
 const path = require('path');
 const AWS = require('aws-sdk');
-const fs = require('fs');
 const retrieveCacheEntry = require('../retrieveCacheEntry');
 const createCacheEntry = require('../createCacheEntry');
 const { createCacheKey } = require('../createCacheKey');
@@ -59,16 +58,6 @@ describe('retrieveCacheEntry', () => {
             expect(Body.includes('test.json')).toBe(true);
             expect(Body.includes('{"test": "Test Data"}')).toBe(true);
         });
-
-        // Test for a cache miss needed. Looking into the desired outcome for this
-
-        // test('returns a cache miss if no match for key found', async () => {
-        //     const keyName = await createCacheKey('"test" | noPath | no-file', __dirname);
-
-        //     const resp = await retrieveCacheEntry(keyName, bucketName, credentials);
-
-        //     expect(true).toBe(false);
-        // });
     });
 
     describe('error scenarios', () => {

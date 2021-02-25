@@ -27,22 +27,45 @@ describe('extractCacheEntry', () => {
         await s3client.createBucket({Bucket: bucketName}).promise();
     });
 
-    test('successfully extracts file from cache buffer', async () => {
+    test('successfully writes tarball to destination from cache buffer', async () => {
         const targetPath = path.resolve(__dirname, 'testData/test.json');
         const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
         await createCacheEntry(targetPath, credentials, bucketName, keyName);
         const { Body } = await retrieveCacheEntry(keyName, bucketName, credentials);
 
         mockFs({
-            'cacheFiles': {/** empty directory */},
+            '/s3Utils/tests/cacheFiles': {/** empty directory */},
             'node_modules': mockFs.load(path.resolve(__dirname, '../../node_modules')),
             '/tmp/jest_rs': mockFs.load('/tmp/jest_rs')
         });
 
-        extractCacheEntry('cacheFiles', keyName, Body);
+        extractCacheEntry(path.resolve(__dirname, '/s3Utils/tests/cacheFiles'), keyName, Body);
 
-        expect(fs.existsSync(path.resolve('cacheFiles',  `${keyName}.tar`))).toBe(true);
+        expect(fs.existsSync(path.resolve(__dirname, '/s3Utils/tests/cacheFiles', `${keyName}.tar`))).toBe(true);
 
         mockFs.restore();
     });
+
+    // test('successfully extracts file from tarball', async () => {
+    //     const targetPath = path.resolve(__dirname, 'testData/test.json');
+    //     const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+    //     await createCacheEntry(targetPath, credentials, bucketName, keyName);
+    //     const { Body } = await retrieveCacheEntry(keyName, bucketName, credentials);
+
+    //     // mockFs({
+    //     //     'cacheFiles': {/** empty directory */},
+    //     //     'node_modules': mockFs.load(path.resolve(__dirname, '../../node_modules')),
+    //     //     '/tmp/jest_rs': mockFs.load('/tmp/jest_rs')
+    //     // });
+
+    //     extractCacheEntry(path.resolve(__dirname, 'cacheFiles'), keyName, Body);
+
+    //     console.log(path.resolve(__dirname, 'cacheFiles', 'test.json'))
+
+    //     expect(fs.existsSync(path.resolve(__dirname, 'cacheFiles', 'test.json'))).toBe(true);
+
+    //     // mockFs.restore();
+    // });
+
+    // Test successfully extracts directory from tarball
 });
