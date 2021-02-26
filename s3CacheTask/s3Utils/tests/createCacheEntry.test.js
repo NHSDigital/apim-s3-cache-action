@@ -12,7 +12,7 @@ const credentials = {
     accessKeyId: 'test-id',
     secretAccessKey: 'test-secret',
 };
-const bucketName = 'test-bucket';
+const bucketName = 'test-create-bucket-2';
 
 describe('createCacheEntry', () => {
     beforeAll(async () => {

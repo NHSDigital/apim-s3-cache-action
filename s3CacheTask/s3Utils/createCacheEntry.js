@@ -19,7 +19,6 @@ const createCacheEntry = async (targetPath, credentials, bucketName, keyName) =>
       let stream;
 
       if (pathIsDir) {
-
          stream = tar.pack(targetPath);
       } else {
          const pathArr = targetPath.split('/');
