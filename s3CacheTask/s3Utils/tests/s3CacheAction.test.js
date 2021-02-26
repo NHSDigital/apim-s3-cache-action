@@ -168,8 +168,9 @@ describe('S3CacheAction', () => {
             const keyName = await s3client.createCacheKey(`"test" | testData | ${vars.testDataDir}`, __dirname);
             await s3client.createCacheEntry(`${vars.testDataDir}`, vars.buckets.maybeGetBucket, keyName);
     
-            await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+            const resp = await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
     
+            expect(resp.message).toBe('cache hit');
             expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
             expect(fs.existsSync(`${vars.extractDir}/testDataNested/test2.json`)).toBe(true);
         });
@@ -178,11 +179,18 @@ describe('S3CacheAction', () => {
             const keyName = await s3client.createCacheKey(`"test" | testData | ${vars.testDataDir}/test.json`, __dirname);
             await s3client.createCacheEntry(`${vars.testDataDir}/test.json`, vars.buckets.maybeGetBucket, keyName);
     
-            await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+            const resp = await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
     
+            expect(resp.message).toBe('cache hit');
             expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
         });
 
-        // Test cache miss
+        // test('reports cache miss when no matching key', async () => {
+        //     const keyName = await s3client.createCacheKey(`"new key" | testData | ${vars.testDataDir}/test.json`, __dirname);
+
+        //     const resp = await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+            
+        //     expect(resp.message).toBe('cache miss');
+        // });
     });
 });

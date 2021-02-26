@@ -6,6 +6,7 @@ const stream = require("stream");
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const { hashFileOrString } = require('./cacheKeyUtils');
+const { rawListeners } = require('process');
 
 class S3CacheAction {
     constructor(s3Client) {
@@ -48,21 +49,25 @@ class S3CacheAction {
      }
 
      async findCacheEntry (keyName, bucketName) {
-        return await this.s3Client.getObject(
-            {
-                Bucket: bucketName,
-                Key: keyName
-            }
-        );
+            const cacheEntry = await this.s3Client.getObject(
+                {
+                    Bucket: bucketName,
+                    Key: keyName
+                }
+            ).createReadStream();
+
+            return cacheEntry;
     }
 
     async maybeGetCacheEntry (keyName, bucketName, destination) {
         const cacheData = await this.findCacheEntry(keyName, bucketName);
 
+        // Currently doesn't catch error. Needs to be fixed.
         if (!cacheData) {
             return { message: 'cache miss' };
         } else {
-            await pipeline(cacheData.createReadStream(), tar.extract(destination));
+            await pipeline(cacheData, tar.extract(destination));
+            return { message: 'cache hit' };
         }
     }
 };
