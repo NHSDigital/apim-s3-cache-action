@@ -3,7 +3,6 @@ const { isPathyChar,
         isPathyPart,
         createHashFromString,
         hashFileOrString,
-        createCacheKey
         } = require('../createCacheKey');
 
 describe('isPathyChar', () => {
@@ -102,24 +101,5 @@ describe('createHashFromString', () => {
         const hashResult = createHashFromString(keyExample);
 
         expect(hashRegex.test(hashResult)).toBe(true);
-    });
-});
-
-describe('createCacheKey', () => {
-    test('return string with same number of "/" separated parts', async () => {
-        const keyInput = '"foo" | foo/bar/foo | foo.txt';
-        const inputParts = keyInput.split('|').map(part => part.trim());
-        const keyOutput = await createCacheKey(keyInput, __dirname);
-        const outputParts = keyOutput.split('/').map(part => part.trim());
-
-        expect(inputParts.length).toBe(outputParts.length);
-    });
-
-    test('returns the same result on each call', async () => {
-        const keyInput = '"foo" | foo/bar/foo | foo.txt';
-        const firstCall = await createCacheKey(keyInput, __dirname);
-        const secondCall = await createCacheKey(keyInput, __dirname);
-
-        expect(firstCall).toBe(secondCall);
     });
 });

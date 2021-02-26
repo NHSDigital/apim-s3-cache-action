@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
+const { hashFileOrString } = require('./cacheKeyUtils');
 
 class S3CacheAction {
     constructor(s3Client) {
@@ -11,6 +12,13 @@ class S3CacheAction {
     async makeBucket(bucketName) {
         await this.s3Client.createBucket({Bucket: bucketName}).promise();
     }
+
+    async createCacheKey (key, workingDir) {
+        const keyParts = key.split('|').map(part => part.trim());
+        const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
+        
+        return keyPartsHashed.join('/');
+    };
 
     async createCacheEntry (targetPath, bucketName, keyName) {    
         const pathIsDir = fs.statSync(targetPath).isDirectory();

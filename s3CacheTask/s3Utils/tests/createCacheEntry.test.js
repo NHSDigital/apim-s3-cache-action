@@ -1,7 +1,7 @@
 const path = require('path');
 const AWS = require('aws-sdk');
 const createCacheEntry = require('../createCacheEntry');
-const { createCacheKey } = require('../createCacheKey');
+const { createCacheKey } = require('../cacheKeyUtils');
 
 process.env.AWS_ENV = 'localstack';
 global.console = {
