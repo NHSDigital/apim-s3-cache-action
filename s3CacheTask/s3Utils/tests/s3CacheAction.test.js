@@ -47,5 +47,71 @@ describe('S3CacheAction', () => {
                 expect(resp['Key']).toBe(keyName);
             });
         });
+
+        describe('error scenarios', () => {    
+            describe('targetPath', () => {
+                test('missing targetPath parameter.', async () => {
+                    try {
+                        const targetPath = undefined;
+                        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+    
+                        await s3client.createCacheEntry(targetPath, vars.buckets.createBucket, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe(
+                        'The \"path\" argument must be of type string or an instance of Buffer or URL. Received undefined');
+                    }
+                });
+    
+                test('invalid targetPath path.', async () => {
+                    try {
+                        const targetPath = 'not-a-real-path';
+                        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+        
+                        await s3client.createCacheEntry(targetPath, vars.buckets.createBucket, keyName);
+                    } catch (error) {
+                        expect(error.message).toStrictEqual(expect.stringContaining('no such file or directory'));
+                    }
+                });
+            });
+    
+            describe('bucket', () => {
+                test('bucket does not exist.', async () => {
+                    try {
+                        const bucketName = 'bucket-doesnt-exist';
+                        const targetPath = path.resolve(__dirname, 'testData/test.json');
+                        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+        
+                        await s3client.createCacheEntry(targetPath, bucketName, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe('The specified bucket does not exist');
+                    }
+                });
+    
+                test('missing bucket parameter.', async () => {
+                    try {
+                        const bucketName = undefined;
+                        const targetPath = path.resolve(__dirname, 'testData/test.json');
+                        const keyName = await createCacheKey('"test" | testData | testData/test.json', __dirname);
+        
+                        await s3client.createCacheEntry(targetPath, bucketName, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe('Missing required key \'Bucket\' in params');
+                    }
+                });
+            });
+    
+            describe('key', () => {
+                test('missing key parameter.', async () => {
+                    try {
+                        const targetPath = path.resolve(__dirname, 'testData/test.json');
+                        const keyName = undefined;
+        
+                        await s3client.createCacheEntry(targetPath, vars.buckets.createBucket, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe('Missing required key \'Key\' in params');
+                    }
+                });
+            });
+        });
     });
 });

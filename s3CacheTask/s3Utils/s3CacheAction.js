@@ -12,9 +12,7 @@ class S3CacheAction {
         await this.s3Client.createBucket({Bucket: bucketName}).promise();
     }
 
-    async createCacheEntry (targetPath, bucketName, keyName) {
-        if (!targetPath) throw SyntaxError('Missing targetPath. A targetPath must be provided.');
-    
+    async createCacheEntry (targetPath, bucketName, keyName) {    
         const pathIsDir = fs.statSync(targetPath).isDirectory();
         let stream;
     
