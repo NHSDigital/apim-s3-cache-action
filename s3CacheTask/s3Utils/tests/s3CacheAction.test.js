@@ -1,3 +1,5 @@
+const mockFs = require('mock-fs');
+const fs = require('fs');
 const AWS = require('aws-sdk');
 const path = require('path');
 const { S3CacheAction } = require('../s3CacheAction');
@@ -9,8 +11,11 @@ const vars = {
     },
     endpoint: 'http://localhost:4566',
     buckets: {
-        createBucket: 'test-create-bucket'
-    }
+        createBucket: 'test-create-bucket',
+        maybeGetBucket: 'test-maybe-get-bucket'
+    },
+    testDataDir: '/testdata',
+    extractDir: '/extract_location'
 };
 
 describe('S3CacheAction', () => {
@@ -137,5 +142,47 @@ describe('S3CacheAction', () => {
                 });
             });
         });
+    });
+
+    describe('maybeGetCacheEntry', () => {   
+        const s3client = new S3CacheAction(new AWS.S3({
+            credentials: vars.credentials,
+            endpoint: vars.endpoint,
+            s3ForcePathStyle: true
+        }));
+
+        beforeAll(async () => {
+            await s3client.makeBucket(vars.buckets.maybeGetBucket);
+        });
+    
+        beforeEach(function() {
+            const config = {};
+            config[vars.extractDir] = {/** empty directory */};
+            config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, 'testData'), {recursive: true, lazy: false});
+            mockFs(config);
+        });
+
+        afterEach(mockFs.restore);
+    
+        test('successfully extracts directory from tarball', async () => {
+            const keyName = await s3client.createCacheKey(`"test" | testData | ${vars.testDataDir}`, __dirname);
+            await s3client.createCacheEntry(`${vars.testDataDir}`, vars.buckets.maybeGetBucket, keyName);
+    
+            await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+    
+            expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
+            expect(fs.existsSync(`${vars.extractDir}/testDataNested/test2.json`)).toBe(true);
+        });
+    
+        test('successfully extracts file from tarball', async () => {
+            const keyName = await s3client.createCacheKey(`"test" | testData | ${vars.testDataDir}/test.json`, __dirname);
+            await s3client.createCacheEntry(`${vars.testDataDir}/test.json`, vars.buckets.maybeGetBucket, keyName);
+    
+            await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+    
+            expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
+        });
+
+        // Test cache miss
     });
 });

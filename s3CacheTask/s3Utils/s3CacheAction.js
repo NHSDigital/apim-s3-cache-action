@@ -2,6 +2,9 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
+const stream = require("stream");
+const { promisify } = require('util')
+const pipeline = promisify(stream.pipeline);
 const { hashFileOrString } = require('./cacheKeyUtils');
 
 class S3CacheAction {
@@ -18,7 +21,7 @@ class S3CacheAction {
         const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
         
         return keyPartsHashed.join('/');
-    };
+    }
 
     async createCacheEntry (targetPath, bucketName, keyName) {    
         const pathIsDir = fs.statSync(targetPath).isDirectory();
@@ -42,7 +45,26 @@ class S3CacheAction {
                 Body: stream,
             }
         ).promise();
-     };
+     }
+
+     async findCacheEntry (keyName, bucketName) {
+        return await this.s3Client.getObject(
+            {
+                Bucket: bucketName,
+                Key: keyName
+            }
+        );
+    }
+
+    async maybeGetCacheEntry (keyName, bucketName, destination) {
+        const cacheData = await this.findCacheEntry(keyName, bucketName);
+
+        if (!cacheData) {
+            return { message: 'cache miss' };
+        } else {
+            await pipeline(cacheData.createReadStream(), tar.extract(destination));
+        }
+    }
 };
 
 module.exports = { S3CacheAction };

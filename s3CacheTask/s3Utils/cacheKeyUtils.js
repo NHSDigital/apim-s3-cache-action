@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-
 const isPathyChar = (char) => {
     const globChars = ['*', '?', '[', ']'];
     const pathChars = ['/', ':'];
@@ -13,7 +12,6 @@ const isPathyChar = (char) => {
     return !invalidFileChars.includes(char);
 };
 
-
 const isPathyPart = (part) => {
     if (part.startsWith('"') && part.endsWith('"')) return false;
     if (part.split('').some(c => !isPathyChar(c))) return false;
@@ -22,7 +20,6 @@ const isPathyPart = (part) => {
     return true;
 };
 
-
 const createHashFromFile = filePath => new Promise(resolve => {
     const hash = crypto.createHash('sha256');
     fs.createReadStream(filePath)
@@ -30,11 +27,9 @@ const createHashFromFile = filePath => new Promise(resolve => {
         .on('end', () => resolve(hash.digest('hex')));
 });
 
-
 const createHashFromString = inputString => {
     return crypto.createHash('sha256').update(inputString).digest("hex");
 };
-
 
 const hashFileOrString = async (part, workingDir) => {
     if (!isPathyPart(part)) return createHashFromString(part);
@@ -48,12 +43,4 @@ const hashFileOrString = async (part, workingDir) => {
     };
 };
 
-
-const createCacheKey = async (key, workingDir) => {
-    const keyParts = key.split('|').map(part => part.trim());
-    const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
-    
-    return keyPartsHashed.join('/');
-};
-
-module.exports = { isPathyChar, isPathyPart, createHashFromString, hashFileOrString, createCacheKey };
+module.exports = { isPathyChar, isPathyPart, createHashFromString, hashFileOrString };

@@ -3,7 +3,7 @@ const { isPathyChar,
         isPathyPart,
         createHashFromString,
         hashFileOrString,
-        } = require('../createCacheKey');
+        } = require('../cacheKeyUtils');
 
 describe('isPathyChar', () => {
     test('returns false for invalid file characters', () => {
