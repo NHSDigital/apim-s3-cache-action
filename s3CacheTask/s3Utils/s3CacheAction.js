@@ -6,7 +6,6 @@ const stream = require("stream");
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const { hashFileOrString } = require('./cacheKeyUtils');
-const { rawListeners } = require('process');
 
 class S3CacheAction {
     constructor(s3Client) {
