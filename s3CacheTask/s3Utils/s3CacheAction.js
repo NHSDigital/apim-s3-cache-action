@@ -8,12 +8,11 @@ const pipeline = promisify(stream.pipeline);
 const { hashFileOrString } = require('./cacheKeyUtils');
 
 class S3CacheAction {
-    constructor(s3Client) {
-        this.s3Client = s3Client || new AWS.S3();
-    }
 
-    async makeBucket(bucketName) {
-        await this.s3Client.createBucket({Bucket: bucketName}).promise();
+    constructor(options) {
+        options = options || {};
+        this.s3Client = options.s3Client || new AWS.S3();
+        this.bucket = options.bucket || null;
     }
 
     async createCacheKey (key, workingDir) {
@@ -23,7 +22,7 @@ class S3CacheAction {
         return keyPartsHashed.join('/');
     }
 
-    async createCacheEntry (targetPath, bucketName, keyName) {    
+    async createCacheEntry (targetPath, keyName) {
         const pathIsDir = fs.statSync(targetPath).isDirectory();
         let stream;
     
@@ -40,45 +39,37 @@ class S3CacheAction {
         
         return await this.s3Client.upload(
             {
-                Bucket: bucketName,
+                Bucket: this.bucket,
                 Key: keyName,
                 Body: stream,
             }
         ).promise();
      }
 
-     async findCacheEntry (keyName, bucketName) {
-        let cacheEntry = null
-        try {
-            const req = await this.s3Client.getObject(
-                {
-                    Bucket: bucketName,
-                    Key: keyName
-                }
-            ).createReadStream()
+     async findCacheEntry (keyName) {
 
-            cacheEntry = req;
-        } catch (error) {
-            console.log('catch block', error)
-            if (error.message !== 'NoSuchKey: TThe specified key does not exist.') {
-                console.log('All other errors (bananas)')
-                throw error;
+        return this.s3Client.getObject(
+            {
+                Bucket: this.bucket,
+                Key: keyName
             }
-            return null
-        }
-        return cacheEntry;
+        ).createReadStream()
+
     }
 
-    async maybeGetCacheEntry (keyName, bucketName, destination) {
-        const cacheData = await this.findCacheEntry(keyName, bucketName);
+    async maybeGetCacheEntry (keyName, destination) {
 
-        if (!cacheData) {
-            return { message: 'cache miss' };
-        } else {
+        try {
+            const cacheData = await this.findCacheEntry(keyName);
             await pipeline(cacheData, tar.extract(destination));
             return { message: 'cache hit' };
+        } catch (error) {
+            if (error.message === 'The specified key does not exist.') {
+                return { message: 'cache miss' };
+            }
+            throw error;
         }
     }
-};
+}
 
 module.exports = { S3CacheAction };
