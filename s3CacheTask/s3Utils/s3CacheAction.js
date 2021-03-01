@@ -47,21 +47,19 @@ class S3CacheAction {
      }
 
      async findCacheEntry (keyName) {
-
         return this.s3Client.getObject(
             {
                 Bucket: this.bucket,
                 Key: keyName
             }
-        ).createReadStream()
-
+        ).createReadStream();
     }
 
     async maybeGetCacheEntry (keyName, destination) {
-
         try {
             const cacheData = await this.findCacheEntry(keyName);
             await pipeline(cacheData, tar.extract(destination));
+            
             return { message: 'cache hit' };
         } catch (error) {
             if (error.message === 'The specified key does not exist.') {
