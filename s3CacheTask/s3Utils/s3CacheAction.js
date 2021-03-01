@@ -48,20 +48,30 @@ class S3CacheAction {
      }
 
      async findCacheEntry (keyName, bucketName) {
-            const cacheEntry = await this.s3Client.getObject(
+        let cacheEntry = null
+        try {
+            const req = await this.s3Client.getObject(
                 {
                     Bucket: bucketName,
                     Key: keyName
                 }
-            ).createReadStream();
+            ).createReadStream()
 
-            return cacheEntry;
+            cacheEntry = req;
+        } catch (error) {
+            console.log('catch block', error)
+            if (error.message !== 'NoSuchKey: TThe specified key does not exist.') {
+                console.log('All other errors (bananas)')
+                throw error;
+            }
+            return null
+        }
+        return cacheEntry;
     }
 
     async maybeGetCacheEntry (keyName, bucketName, destination) {
         const cacheData = await this.findCacheEntry(keyName, bucketName);
 
-        // Currently doesn't catch error. Needs to be fixed.
         if (!cacheData) {
             return { message: 'cache miss' };
         } else {

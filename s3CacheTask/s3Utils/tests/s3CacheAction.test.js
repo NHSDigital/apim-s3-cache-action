@@ -185,12 +185,17 @@ describe('S3CacheAction', () => {
             expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
         });
 
-        // test('reports cache miss when no matching key', async () => {
-        //     const keyName = await s3client.createCacheKey(`"new key" | testData | ${vars.testDataDir}/test.json`, __dirname);
+        test('reports cache miss when no matching key', async () => {
+            try {
+                const keyName = await s3client.createCacheKey(`"new key" | testData | ${vars.testDataDir}/test.json`, __dirname);
 
-        //     const resp = await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
-            
-        //     expect(resp.message).toBe('cache miss');
-        // });
+                const resp = await s3client.maybeGetCacheEntry(keyName, vars.buckets.maybeGetBucket, vars.extractDir);
+
+                expect(resp.message).toBe('cache miss');
+            } catch (error) {
+                console.log('test catch')
+                throw error
+            }
+        });
     });
 });
