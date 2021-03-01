@@ -12,7 +12,8 @@ const vars = {
     },
     endpoint: 'http://localhost:4566',
     testDataDir: '/testdata',
-    extractDir: '/extract_location'
+    extractDir: '/extract_location',
+    virtualEnv: '/.venv'
 };
 
 describe('S3CacheAction', () => {
@@ -32,6 +33,7 @@ describe('S3CacheAction', () => {
         const config = {};
         config[vars.extractDir] = {/** empty directory */};
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, 'testData'), {recursive: true, lazy: false});
+        config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, 'fakeVenv'), {recursive: true, lazy: false});
         mockFs(config);
         randomBucket = uuidv4();
         await awsS3Client.createBucket({Bucket: randomBucket}).promise();
@@ -168,5 +170,12 @@ describe('S3CacheAction', () => {
 
             expect(resp.message).toBe('cache miss');
         });
+    });
+
+    describe('cleanDirIfPythonVenv', () => {
+        test('returns true if dir is venv', () => {
+            const isVenv = cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+            expect(isVenv).toBe(true)
+        })
     });
 });

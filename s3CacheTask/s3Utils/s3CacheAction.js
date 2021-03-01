@@ -2,9 +2,10 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
-const stream = require("stream");
+const stream = require('stream');
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
+const path = require('path');
 const { hashFileOrString } = require('./cacheKeyUtils');
 
 class S3CacheAction {
@@ -59,7 +60,7 @@ class S3CacheAction {
         try {
             const cacheData = await this.findCacheEntry(keyName);
             await pipeline(cacheData, tar.extract(destination));
-            
+
             return { message: 'cache hit' };
         } catch (error) {
             if (error.message === 'The specified key does not exist.') {
@@ -67,6 +68,11 @@ class S3CacheAction {
             }
             throw error;
         }
+    }
+
+    cleanDirIfPythonVenv (targetPath) {
+        const isPythonVenv = fs.statSync(path.resolve(targetPath, 'bin/python')).isFile();
+        return isPythonVenv;
     }
 }
 
