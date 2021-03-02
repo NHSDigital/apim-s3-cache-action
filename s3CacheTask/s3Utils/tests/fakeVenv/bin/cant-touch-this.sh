@@ -12,7 +12,7 @@ if [[ ! -f "${virtual_env_dir}/bin/python" ]]; then
     exit 0
 fi
 
-for file in $(find . -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1 ); do
+for file in $(find "${virtual_env_dir}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1 ); do
     if ! (head -n 1 ${file} | grep -Eq '#!.*python' > /dev/null); then
         continue
     fi
