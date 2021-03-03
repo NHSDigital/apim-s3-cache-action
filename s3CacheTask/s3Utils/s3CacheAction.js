@@ -3,6 +3,7 @@ const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
 const stream = require('stream');
+const path = require('path');
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
@@ -71,8 +72,8 @@ class S3CacheAction {
     }
 
     async cleanDirIfPythonVenv (targetPath) {
-        // Errors if file doesn't exist. Check first or catch error
-        // const isPythonVenv = fs.statSync(path.resolve(targetPath, 'bin/python')).isFile();
+        const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
+        if (!isPythonVenv) return null;
 
         const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1`
 
@@ -82,16 +83,16 @@ class S3CacheAction {
             throw new Error(stderr);
         }
 
-        console.log(stdout)
-
         const filePaths = stdout.trim().split('\n');
         filePaths.forEach(filePath => {
             const data = fs.readFileSync(filePath, {encoding: 'utf-8'});
-            console.log(data)
+            const firstLine = data.split('\n')[0]
+            const pythonRegex = new RegExp('^#!.*python')
 
-            const altData = data.replace(new RegExp('^#!.*python'), `#!${targetPath}/bin/python`)
-            console.log(altData)
-            // fs.writeFileSync(filePath, altData);
+            if (pythonRegex.test(firstLine)) {
+                const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`)
+                fs.writeFileSync(filePath, altData);
+            }
         });
     }
 }

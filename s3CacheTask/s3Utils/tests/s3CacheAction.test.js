@@ -172,10 +172,11 @@ describe('S3CacheAction', () => {
         });
     });
 
-    // describe('cleanDirIfPythonVenv', () => {
-    //     test('returns true if dir is venv', async () => {
-    //         const isVenv = await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
-    //         expect(isVenv).toBe(true)
-    //     })
-    // });
+    describe('cleanDirIfPythonVenv', () => {
+        // FS structure must mirror real structure for bash to recognise files
+        test('returns true if dir is venv', async () => {
+            const isVenv = await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+            expect(isVenv).toBe(true)
+        })
+    });
 });
