@@ -71,7 +71,7 @@ class S3CacheAction {
         }
     }
 
-    async cleanDirIfPythonVenv (targetPath) {
+    async maybeFixPythonVenv (targetPath) {
         const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
         if (!isPythonVenv) return { message: 'Not a python virtual environment.'};
 
@@ -95,7 +95,7 @@ class S3CacheAction {
             }
         });
 
-        return { message: 'Success: leaned python virtual environment'};
+        return { message: 'Success: fixed python virtual environment'};
     }
 }
 
