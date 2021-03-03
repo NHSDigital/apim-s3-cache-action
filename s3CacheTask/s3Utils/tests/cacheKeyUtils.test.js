@@ -22,6 +22,10 @@ describe('isPathyChar', () => {
             expect(isPathyChar(c)).toBe(true);
         });
     });
+
+    test('returns false if no char provided', () => {
+        expect(isPathyChar(null)).toBe(false);
+    });
 });
 
 describe('isPathyPart', () => {
@@ -56,6 +60,10 @@ describe('isPathyPart', () => {
 
     test('returns false when last character of part is "."', () => {
         expect(isPathyPart('foo.')).toBe(false);
+    });
+
+    test('returns false if no part provided', () => {
+        expect(isPathyPart(null)).toBe(false);
     });
 });
 

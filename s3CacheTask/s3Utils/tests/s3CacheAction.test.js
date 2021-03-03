@@ -13,7 +13,8 @@ const vars = {
     endpoint: 'http://localhost:4566',
     testDataDir: '/testdata',
     extractDir: '/extract_location',
-    virtualEnv: `${__dirname}/fakeVenv`
+    virtualEnv: `${__dirname}/fakeVenv`,
+    extractVenv: `${__dirname}/anotherVenv`
 };
 
 describe('S3CacheAction', () => {
@@ -29,11 +30,12 @@ describe('S3CacheAction', () => {
         });
     });
 
-    beforeEach(async() => {
+    beforeEach(async () => {
         const config = {};
         config[vars.extractDir] = {/** empty directory */};
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, 'testData'), {recursive: true, lazy: false});
         config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, 'fakeVenv'), {recursive: true, lazy: false});
+        config[vars.extractVenv] = {/** empty directory */};
         mockFs(config);
         randomBucket = uuidv4();
         await awsS3Client.createBucket({Bucket: randomBucket}).promise();
@@ -43,7 +45,6 @@ describe('S3CacheAction', () => {
     afterEach(mockFs.restore);
 
     describe('createCacheKey', () => {
-
         test('return string with same number of "/" separated parts', async () => {
             const keyInput = '"foo" | foo/bar/foo | foo.txt';
             const inputParts = keyInput.split('|').map(part => part.trim());
@@ -169,6 +170,26 @@ describe('S3CacheAction', () => {
             const resp = await cacheAction.maybeGetCacheEntry(keyName, vars.extractDir);
 
             expect(resp.message).toBe('cache miss');
+        });
+
+        test('reports python path fixed if directory is python virtual env', async () => {
+            const keyName = await cacheAction.createCacheKey(`"python venv" | fakeVenv | ${vars.virtualEnv}`, __dirname);
+            await cacheAction.createCacheEntry(`${vars.virtualEnv}`, keyName);
+    
+            const resp = await cacheAction.maybeGetCacheEntry(keyName, vars.extractVenv);
+    
+            expect(resp.message).toBe('cache hit and python paths fixed');
+        });
+
+        test('throws error when destination doesnt exist', async () => {
+            try {
+                const keyName = await cacheAction.createCacheKey(`"test" | testData | ${vars.testDataDir}/test.json`, __dirname);
+                await cacheAction.createCacheEntry(`${vars.testDataDir}/test.json`, keyName);
+
+                await cacheAction.maybeGetCacheEntry(keyName, null);
+            } catch (error) {
+                expect(error.message).toBe('The "path" argument must be of type string. Received null');
+            }
         });
     });
 

@@ -7,12 +7,14 @@ const isPathyChar = (char) => {
     const pathChars = ['/', ':'];
     const invalidFileChars = ['"', '<', '>', '|'];
 
+    if (!char) return false;
     if (globChars.includes(char)) return true;
     if (pathChars.includes(char)) return true;
     return !invalidFileChars.includes(char);
 };
 
 const isPathyPart = (part) => {
+    if (!part) return false;
     if (part.startsWith('"') && part.endsWith('"')) return false;
     if (part.split('').some(c => !isPathyChar(c))) return false;
     if (part.includes('.') && part.includes('/') && part.includes('\\')) return false;

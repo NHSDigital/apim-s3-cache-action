@@ -57,20 +57,6 @@ class S3CacheAction {
         ).createReadStream();
     }
 
-    async maybeGetCacheEntry (keyName, destination) {
-        try {
-            const cacheData = await this.findCacheEntry(keyName);
-            await pipeline(cacheData, tar.extract(destination));
-
-            return { message: 'cache hit' };
-        } catch (error) {
-            if (error.message === 'The specified key does not exist.') {
-                return { message: 'cache miss' };
-            }
-            throw error;
-        }
-    }
-
     async maybeFixPythonVenv (targetPath) {
         const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
         if (!isPythonVenv) return false;
@@ -97,6 +83,25 @@ class S3CacheAction {
         });
 
         return true;
+    }
+
+    async maybeGetCacheEntry (keyName, destination) {
+        try {
+            const cacheData = await this.findCacheEntry(keyName);
+            await pipeline(cacheData, tar.extract(destination));
+            const fixedPythonVenv = await this.maybeFixPythonVenv(destination);
+
+            if (fixedPythonVenv) {
+                return { message: 'cache hit and python paths fixed' };
+            } else {
+                return { message: 'cache hit' };
+            }
+        } catch (error) {
+            if (error.message === 'The specified key does not exist.') {
+                return { message: 'cache miss' };
+            }
+            throw error;
+        }
     }
 }
 
