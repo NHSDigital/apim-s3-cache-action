@@ -73,7 +73,7 @@ class S3CacheAction {
 
     async maybeFixPythonVenv (targetPath) {
         const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
-        if (!isPythonVenv) return { message: 'Not a python virtual environment.'};
+        if (!isPythonVenv) return false;
 
         const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1`;
 
@@ -90,12 +90,13 @@ class S3CacheAction {
             const pythonRegex = new RegExp('^#!.*python');
 
             if (pythonRegex.test(firstLine)) {
+                // replace is regec based and only replaces first occurance.
                 const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`);
                 fs.writeFileSync(filePath, altData);
             }
         });
 
-        return { message: 'Success: fixed python virtual environment'};
+        return true;
     }
 }
 

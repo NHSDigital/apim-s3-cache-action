@@ -67,7 +67,7 @@ describe('S3CacheAction', () => {
             test('successfully uploads file to s3 bucket.', async () => {
                 const targetPath = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey('"test" | testData | testData/test.json', __dirname);
-    
+
                 const resp = await cacheAction.createCacheEntry(targetPath, keyName);
     
                 expect(resp['Bucket']).toBe(randomBucket);
@@ -173,14 +173,14 @@ describe('S3CacheAction', () => {
     });
 
     describe('maybeFixPythonVenv', () => {
-        test('returns success message if dir is python virtual env', async () => {
+        test('returns true if dir is python virtual env', async () => {
             const resp = await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-            expect(resp.message).toBe('Success: fixed python virtual environment')
+            expect(resp).toBe(true)
         })
 
-        test('returns message if dir is not python virtual env', async () => {
+        test('returns false if dir is not python virtual env', async () => {
             const resp = await cacheAction.maybeFixPythonVenv(vars.testDataDir);
-            expect(resp.message).toBe('Not a python virtual environment.')
+            expect(resp).toBe(false)
         })
 
         test('If python file and includes shebang replaces shebang line path with target dir path', async () => {
