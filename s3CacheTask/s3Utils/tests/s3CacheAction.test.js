@@ -13,7 +13,7 @@ const vars = {
     endpoint: 'http://localhost:4566',
     testDataDir: '/testdata',
     extractDir: '/extract_location',
-    virtualEnv: '/.venv'
+    virtualEnv: `${__dirname}/fakeVenv`
 };
 
 describe('S3CacheAction', () => {
@@ -173,10 +173,48 @@ describe('S3CacheAction', () => {
     });
 
     describe('cleanDirIfPythonVenv', () => {
-        // FS structure must mirror real structure for bash to recognise files
-        test('returns true if dir is venv', async () => {
-            const isVenv = await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
-            expect(isVenv).toBe(true)
+        test('returns success message if dir is python virtual env', async () => {
+            const resp = await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+            expect(resp.message).toBe('Success: leaned python virtual environment')
+        })
+
+        test('returns message if dir is not python virtual env', async () => {
+            const resp = await cacheAction.cleanDirIfPythonVenv(vars.testDataDir);
+            expect(resp.message).toBe('Not a python virtual environment.')
+        })
+
+        test('If python file and includes shebang replaces shebang line path with target dir path', async () => {
+            const originalShebang = '#!/home/ubuntu/some-project/.venv/bin/python';
+            const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/wait_for_dns`, {encoding: 'utf-8'});
+            const firstLine = originalData.split('\n')[0];
+            expect(firstLine).toBe(originalShebang);
+
+            await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+
+            const newShebang = `#!${vars.virtualEnv}/bin/python`;
+            const newData = fs.readFileSync(`${vars.virtualEnv}/bin/wait_for_dns`, {encoding: 'utf-8'});
+            const newFirstLine = newData.split('\n')[0];
+            expect(newFirstLine).toBe(newShebang);
+        })
+
+        test('doesnt change python file if file doesnt include shebang line', async () => {
+            const preStats = fs.statSync(`${vars.virtualEnv}/bin/another_python_script.py`);
+
+            await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+
+            const postStats = fs.statSync(`${vars.virtualEnv}/bin/another_python_script.py`);
+
+            expect(preStats).toEqual(postStats);
+        })
+
+        test('doesnt change symlinks', async () => {
+            const preStats = fs.statSync(`${vars.virtualEnv}/bin/symlink_to_wait_for_dns`);
+
+            await cacheAction.cleanDirIfPythonVenv(vars.virtualEnv);
+
+            const postStats = fs.statSync(`${vars.virtualEnv}/bin/symlink_to_wait_for_dns`);
+
+            expect(preStats).toEqual(postStats);
         })
     });
 });

@@ -73,9 +73,9 @@ class S3CacheAction {
 
     async cleanDirIfPythonVenv (targetPath) {
         const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
-        if (!isPythonVenv) return null;
+        if (!isPythonVenv) return { message: 'Not a python virtual environment.'};
 
-        const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1`
+        const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1`;
 
         const { err, stdout, stderr } = await exec(bashCmd);
         if (err) throw err;
@@ -86,14 +86,16 @@ class S3CacheAction {
         const filePaths = stdout.trim().split('\n');
         filePaths.forEach(filePath => {
             const data = fs.readFileSync(filePath, {encoding: 'utf-8'});
-            const firstLine = data.split('\n')[0]
-            const pythonRegex = new RegExp('^#!.*python')
+            const firstLine = data.split('\n')[0];
+            const pythonRegex = new RegExp('^#!.*python');
 
             if (pythonRegex.test(firstLine)) {
-                const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`)
+                const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`);
                 fs.writeFileSync(filePath, altData);
             }
         });
+
+        return { message: 'Success: leaned python virtual environment'};
     }
 }
 
