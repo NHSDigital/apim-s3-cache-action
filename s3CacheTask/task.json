@@ -15,12 +15,28 @@
     "instanceNameFormat": "Echo $(samplestring)",
     "inputs": [
         {
-            "name": "samplestring",
+            "name": "key",
             "type": "string",
-            "label": "Sample String",
+            "label": "S3 Key",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "A sample string"
+            "helpMarkDown": "A key that will be hashed and used for S3 Cache Entry"
+        },
+        {
+            "name": "location",
+            "type": "string",
+            "label": "Location",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path to file or folder to be cached"
+        },
+        {
+            "name": "bucket",
+            "type": "string",
+            "label": "Bucket",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Name of S3 bucket item will be cached in"
         }
     ],
     "execution": {

@@ -1,14 +1,20 @@
 const tl = require('azure-pipelines-task-lib/task');
-const uploadCache = require("./s3Utils/uploadCache");
 
-const run = async () => {
+const uploadCache = async () => {
     try {
-        console.log('Simulate: Saving Cache');
-        // TO DO - Use cache action in extention.
+        const inputs = {
+            key: tl.getInput('key', true),
+            location: tl.getInput('location', true),
+            bucket: tl.getInput('bucket', true)
+        }
+        console.log('Inside uploadCache')
+        console.log('input key', inputs.key);
+        console.log('input location', inputs.location);
+        console.log('input bucket', inputs.bucket);
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
     }
 }
 
-run();
+uploadCache();

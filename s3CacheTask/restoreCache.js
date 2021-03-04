@@ -1,19 +1,20 @@
 const tl = require('azure-pipelines-task-lib/task');
-const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
 
-async function run() {
+const restoreCache = async () => {
     try {
-        const inputString = tl.getInput('samplestring', true);
-        if (inputString == 'bad') {
-            tl.setResult(tl.TaskResult.Failed, 'Bad input was given');
-            return;
+        const inputs = {
+            key: tl.getInput('key', true),
+            location: tl.getInput('location', true),
+            bucket: tl.getInput('bucket', true)
         }
-        console.log('Simulate: Caching ', inputString);
+        console.log('Inside restoreCache')
+        console.log('input key', inputs.key);
+        console.log('input location', inputs.location);
+        console.log('input bucket', inputs.bucket);
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
     }
 }
 
-run();
+restoreCache();
