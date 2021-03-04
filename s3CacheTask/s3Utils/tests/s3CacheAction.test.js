@@ -13,8 +13,8 @@ const vars = {
     endpoint: 'http://localhost:4566',
     testDataDir: '/testdata',
     extractDir: '/extract_location',
-    virtualEnv: `${__dirname}/fakeVenv`,
-    extractVenv: `${__dirname}/anotherVenv`
+    virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
+    extractVenv: `${__dirname}/../../../data/anotherVenv` // Data extracted to reduce extension size
 };
 
 describe('S3CacheAction', () => {
@@ -33,8 +33,9 @@ describe('S3CacheAction', () => {
     beforeEach(async () => {
         const config = {};
         config[vars.extractDir] = {/** empty directory */};
-        config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, 'testData'), {recursive: true, lazy: false});
-        config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, 'fakeVenv'), {recursive: true, lazy: false});
+        // Data extracted to reduce extension size
+        config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
+        config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
         config[vars.extractVenv] = {/** empty directory */};
         mockFs(config);
         randomBucket = uuidv4();
