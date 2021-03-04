@@ -25,12 +25,12 @@
     ],
     "execution": {
         "Node10": {
-            "target": "index.js"
+            "target": "restoreCache.js"
         }
     },
     "postjobexecution": {
         "Node10": {
-            "target": "savecache.js"
+            "target": "uploadCache.js"
         }
     }
 }
