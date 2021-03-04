@@ -56,7 +56,6 @@ stages:
             displayName: Install dependencies
 
           - bash: |
-              make down
               make test
               exit_code=$?
               echo Exit code - ${exit_code}
