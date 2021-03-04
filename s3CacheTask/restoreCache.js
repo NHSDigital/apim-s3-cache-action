@@ -10,7 +10,6 @@ const restoreCache = async () => {
         console.log('Inside restoreCache')
         console.log('input key', inputs.key);
         console.log('input location', inputs.location);
-        console.log('input bucket', inputs.bucket);
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
