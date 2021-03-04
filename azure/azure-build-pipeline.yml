@@ -65,7 +65,7 @@ stages:
 
           - task: s3-cache-action@0
             inputs:
-              key: '"Test Data" | $(System.DefaultWorkingDirectory)/s3CacheTask/s3Utils/tests/testData'
-              location: '$(System.DefaultWorkingDirectory)/s3CacheTask/s3Utils/tests/testData'
+              key: '"Test Data" | $(System.DefaultWorkingDirectory)/data/testData'
+              location: '$(System.DefaultWorkingDirectory)data/testData'
               bucket: $(PIPELINE_CACHE_BUCKET)
             displayName: Cache to s3
