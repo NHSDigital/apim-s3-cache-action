@@ -8,7 +8,7 @@ const run = async () => {
             location: tl.getInput('location', true),
             bucket: tl.getInput('bucket', true)
         };
-        await restoreCache(inputs);
+        await restoreCache(inputs, null);
     }
     catch (err) {
         tl.setResult(tl.TaskResult.Failed, err.message);
