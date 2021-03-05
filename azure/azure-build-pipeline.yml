@@ -63,9 +63,9 @@ stages:
               exit ${exit_code}
             displayName: Run s3 tests
 
-          - task: s3-cache-action@0
-            inputs:
-              key: '"Test Data" | data/testData'
-              location: 'data/testData'
-              bucket: $(PIPELINE_CACHE_BUCKET)
-            displayName: Cache to s3
+          # - task: s3-cache-action@0
+          #   inputs:
+          #     key: '"Test Data" | data/testData'
+          #     location: 'data/testData'
+          #     bucket: $(PIPELINE_CACHE_BUCKET)
+          #   displayName: Cache to s3

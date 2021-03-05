@@ -19,6 +19,10 @@ const vars = {
     extractVenv: `${__dirname}/../../../data/anotherVenv` // Data extracted to reduce extension size
 };
 
+global.console = {
+    log: jest.fn()
+}
+
 describe('taskUtils', () => {
     let awsS3Client;
     let cacheAction;
@@ -49,8 +53,6 @@ describe('taskUtils', () => {
 
     describe('restoreCache', () => {
         // HAPPY PATH
-        // Cache hit - file - CacheRestored variable set true and logged
-        // Cache hit - folder - folder restored
         // Cache hit - folder - CacheRestored variable set true and logged
         // Cache hit - python venv - folder restored and fixed
         // Cache hit - python venv - CacheRestored variable set true and logged
@@ -75,6 +77,65 @@ describe('taskUtils', () => {
     
                 expect(readExtractDir().length).toBe(1);
                 expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
+            });
+
+            test('file - CacheRestored pipeline var set to true and logged', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData/test.json | test.json',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                }
+    
+                const pathToFile = `${vars.testDataDir}/test.json`;
+                const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
+                await cacheAction.createCacheEntry(pathToFile, keyName);
+
+                await restoreCache(pipelineInput, awsS3Client);
+
+                expect(tl.getVariable('CacheRestored')).toBe('true');
+                expect(global.console.log).toHaveBeenCalledWith(
+                    'Cache restored: true'
+                )
+            });
+
+            test('directory - cache entry restored to location', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                }
+    
+                const pathToDir = `${vars.testDataDir}`;
+                const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
+                await cacheAction.createCacheEntry(pathToDir, keyName);
+    
+                const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
+    
+                expect(readExtractDir().length).toBe(0);
+    
+                await restoreCache(pipelineInput, awsS3Client);
+    
+                expect(fs.existsSync(`${vars.extractDir}/test.json`)).toBe(true);
+                expect(fs.existsSync(`${vars.extractDir}/testDataNested/test2.json`)).toBe(true);
+            });
+
+            test('directory - CacheRestored pipeline var set to true and logged', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                }
+    
+                const pathToDir = `${vars.testDataDir}`;
+                const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
+                await cacheAction.createCacheEntry(pathToDir, keyName);
+
+                await restoreCache(pipelineInput, awsS3Client);
+
+                expect(tl.getVariable('CacheRestored')).toBe('true');
+                expect(global.console.log).toHaveBeenCalledWith(
+                    'Cache restored: true'
+                )
             });
         });
 
