@@ -2,8 +2,8 @@ const mockFs = require('mock-fs');
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const path = require('path');
-const { S3CacheAction } = require('../s3CacheAction');
 const { v4: uuidv4 } =  require('uuid');
+const { S3CacheAction } = require('../s3CacheAction');
 
 const vars = {
     credentials: {
