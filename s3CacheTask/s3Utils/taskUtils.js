@@ -18,7 +18,7 @@ const restoreCache = async (pipelineInput, s3Client) => {
         name: 'CacheRestored',
         value: shouldRestore
     };
-    console.log(shouldRestore);
+    console.log(`Cache restored: ${shouldRestore}`);
     tl.setVariable(restore.name, restore.value);
 };
 
@@ -33,7 +33,7 @@ const uploadCache = async (pipelineInput, s3Client) => {
 
         const hashedKey = await cacheAction.createCacheKey(key, targetPath);
 
-        await cacheAction.maybeGetCacheEntry(hashedKey, targetPath);
+        await cacheAction.createCacheEntry(targetPath, hashedKey);
     } else if (!cacheRestored) {
         tl.setResult(
             tl.TaskResult.Skipped,
