@@ -76,7 +76,7 @@ class S3CacheAction {
             const pythonRegex = new RegExp('^#!.*python');
 
             if (pythonRegex.test(firstLine)) {
-                // replace is regec based and only replaces first occurance.
+                // replace is regex based and only replaces first occurance.
                 const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`);
                 fs.writeFileSync(filePath, altData);
             }
