@@ -52,10 +52,6 @@ describe('taskUtils', () => {
     afterEach(mockFs.restore);
 
     describe('restoreCache', () => {
-        // HAPPY PATH
-        // Cache hit - folder - CacheRestored variable set true and logged
-        // Cache hit - python venv - folder restored and fixed
-        // Cache hit - python venv - CacheRestored variable set true and logged
         // Cache miss - CacheRestored variable set to false and logged
         describe('happy path', () => {
             test('file - cache entry restored to location', async () => {
@@ -135,6 +131,45 @@ describe('taskUtils', () => {
                 expect(tl.getVariable('CacheRestored')).toBe('true');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: true'
+                )
+            });
+
+            test('python virtual env - cache entry restored to location and shebang paths fixed', async () => {
+                const pipelineInput = {
+                    key: `"python venv" | fakeVenv | ${vars.virtualEnv}`,
+                    location: vars.extractVenv,
+                    bucket: randomBucket
+                }
+    
+                const pathToVenv = `${vars.virtualEnv}`;
+                const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
+                await cacheAction.createCacheEntry(pathToVenv, keyName);
+    
+                const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
+    
+                expect(readExtractDir().length).toBe(0);
+    
+                await restoreCache(pipelineInput, awsS3Client);
+    
+                const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/wait_for_dns`, {encoding: 'utf-8'});
+                const originalFirstLine = originalData.split('\n')[0];
+                const newData = fs.readFileSync(`${vars.extractVenv}/bin/wait_for_dns`, {encoding: 'utf-8'});
+                const newFirstLine = newData.split('\n')[0];
+                expect(originalFirstLine).not.toBe(newFirstLine);
+            });
+
+            test('cache miss - CacheRestored pipeline var set to false and logged', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                }
+
+                await restoreCache(pipelineInput, awsS3Client);
+
+                expect(tl.getVariable('CacheRestored')).toBe('false');
+                expect(global.console.log).toHaveBeenCalledWith(
+                    'Cache restored: false'
                 )
             });
         });
