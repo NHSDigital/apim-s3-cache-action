@@ -18,6 +18,7 @@ class S3CacheAction {
     }
 
     async createCacheKey (key, workingDir) {
+        if (!key) return null;
         const keyParts = key.split('|').map(part => part.trim());
         const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
         

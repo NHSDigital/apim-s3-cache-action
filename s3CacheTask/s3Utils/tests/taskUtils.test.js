@@ -52,14 +52,13 @@ describe('taskUtils', () => {
     afterEach(mockFs.restore);
 
     describe('restoreCache', () => {
-        // Cache miss - CacheRestored variable set to false and logged
         describe('happy path', () => {
             test('file - cache entry restored to location', async () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData/test.json | test.json',
                     location: vars.extractDir,
                     bucket: randomBucket
-                }
+                };
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -80,7 +79,7 @@ describe('taskUtils', () => {
                     key: '"Test" | data/testData/test.json | test.json',
                     location: vars.extractDir,
                     bucket: randomBucket
-                }
+                };
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -91,7 +90,7 @@ describe('taskUtils', () => {
                 expect(tl.getVariable('CacheRestored')).toBe('true');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: true'
-                )
+                );
             });
 
             test('directory - cache entry restored to location', async () => {
@@ -99,7 +98,7 @@ describe('taskUtils', () => {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
                     bucket: randomBucket
-                }
+                };
     
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -120,7 +119,7 @@ describe('taskUtils', () => {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
                     bucket: randomBucket
-                }
+                };
     
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -131,7 +130,7 @@ describe('taskUtils', () => {
                 expect(tl.getVariable('CacheRestored')).toBe('true');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: true'
-                )
+                );
             });
 
             test('python virtual env - cache entry restored to location and shebang paths fixed', async () => {
@@ -139,7 +138,7 @@ describe('taskUtils', () => {
                     key: `"python venv" | fakeVenv | ${vars.virtualEnv}`,
                     location: vars.extractVenv,
                     bucket: randomBucket
-                }
+                };
     
                 const pathToVenv = `${vars.virtualEnv}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -163,24 +162,60 @@ describe('taskUtils', () => {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
                     bucket: randomBucket
-                }
+                };
 
                 await restoreCache(pipelineInput, awsS3Client);
 
                 expect(tl.getVariable('CacheRestored')).toBe('false');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: false'
-                )
+                );
             });
         });
 
-        // ERROR SCENARIOS
-        // No bucket provided
-        // Invalid bucket
-        // no key provided
-        // invalid key
-        // Invalid s3Client
-        // No location provided
+        describe('error scenarios', () => {
+            test('no bucket provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: '"Test" | data/testData | testData',
+                        location: vars.extractDir,
+                        bucket: null
+                    };
+
+                    await restoreCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('Missing required key \'Bucket\' in params');
+                }
+            });
+
+            test('no key provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: null,
+                        location: vars.extractDir,
+                        bucket: randomBucket
+                    };
+
+                    await restoreCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('Missing required key \'Key\' in params');
+                }
+            });
+
+            test('no location provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: '"Test" | data/testData | testData',
+                        location: null,
+                        bucket: randomBucket
+                    };
+
+                    await restoreCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('The \"path\" argument must be of type string. Received null');
+                }
+            });
+        });
     });
 
     describe('uploadCache', () => {
