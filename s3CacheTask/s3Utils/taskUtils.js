@@ -34,16 +34,19 @@ const uploadCache = async (pipelineInput, s3Client) => {
         const hashedKey = await cacheAction.createCacheKey(key, targetPath);
 
         await cacheAction.createCacheEntry(targetPath, hashedKey);
+        return;
     } else if (!cacheRestored) {
         tl.setResult(
             tl.TaskResult.Skipped,
             "No cache reported. Upload skipped."
         );
+        return;
     } else {
         tl.setResult(
             tl.TaskResult.Skipped,
             "Cache exists. Upload skipped."
         );
+        return;
     }
     
 };

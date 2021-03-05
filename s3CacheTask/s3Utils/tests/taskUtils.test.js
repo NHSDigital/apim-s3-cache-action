@@ -226,13 +226,50 @@ describe('taskUtils', () => {
         // cacheRestored reported - sets result to cache exists
 
         // ERROR SCENARIOS
-        // No bucket provided
-        // Invalid bucket
-        // no key provided
-        // invalid key
-        // Invalid s3Client
-        // No location provided
         // no file at path to file
         // empty dir at path to dir
+        describe('error scenarios', () => {
+            test('no bucket provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: '"Test" | data/testData | testData',
+                        location: vars.extractDir,
+                        bucket: null
+                    };
+
+                    await uploadCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('Missing required key \'Bucket\' in params');
+                }
+            });
+
+            test('no key provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: null,
+                        location: vars.extractDir,
+                        bucket: randomBucket
+                    };
+
+                    await uploadCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('Missing required key \'Key\' in params');
+                }
+            });
+
+            test('no location provided', async () => {
+                try {
+                    const pipelineInput = {
+                        key: '"Test" | data/testData | testData',
+                        location: null,
+                        bucket: randomBucket
+                    };
+
+                    await uploadCache(pipelineInput, awsS3Client);
+                } catch (error) {
+                    expect(error.message).toBe('The \"path\" argument must be of type string. Received null');
+                }
+            });
+        });
     });
 });
