@@ -5,10 +5,10 @@ services:
     environment:
       - SERVICES=s3
       - DEBUG=1
-      - EDGE_PORT=4566
+      - EDGE_PORT=4666
     healthcheck:
       test: awslocal s3 ls
       interval: 3s
       timeout: 10s
     ports:
-      - '4566:4566'
+      - '4666:4666'
