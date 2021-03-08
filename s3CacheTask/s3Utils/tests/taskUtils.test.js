@@ -12,7 +12,7 @@ const vars = {
         accessKeyId: 'test-id',
         secretAccessKey: 'test-secret',
     },
-    endpoint: 'http://localhost:4566',
+    endpoint: 'http://localhost:4666',
     testDataDir: '/testdata',
     extractDir: '/extract_location',
     virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
