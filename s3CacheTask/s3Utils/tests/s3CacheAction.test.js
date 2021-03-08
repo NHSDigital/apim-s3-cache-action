@@ -14,7 +14,8 @@ const vars = {
     testDataDir: '/testdata',
     extractDir: '/extract_location',
     virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
-    extractVenv: `${__dirname}/../../../data/anotherVenv` // Data extracted to reduce extension size
+    extractVenv: `${__dirname}/../../../data/anotherVenv`, // Data extracted to reduce extension size
+    emptyDir: '/emptyDir'
 };
 
 describe('S3CacheAction', () => {
@@ -37,6 +38,7 @@ describe('S3CacheAction', () => {
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
         config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
         config[vars.extractVenv] = {/** empty directory */};
+        config[vars.emptyDir] = {/** empty directory */};
         mockFs(config);
         randomBucket = uuidv4();
         await awsS3Client.createBucket({Bucket: randomBucket}).promise();
@@ -97,18 +99,41 @@ describe('S3CacheAction', () => {
                         await cacheAction.createCacheEntry(targetPath, keyName);
                     } catch (error) {
                         expect(error.message).toBe(
-                        'The \"path\" argument must be of type string or an instance of Buffer or URL. Received undefined');
+                            'no such file or directory at target path');
+                    }
+                });
+
+                test('no file at targetPath.', async () => {
+                    try {
+                        const targetPath = `${vars.testDataDir}/not-a-file`;
+                        const keyName = await cacheAction.createCacheKey('"test" | testData | testData/not-a-file', __dirname);
+    
+                        await cacheAction.createCacheEntry(targetPath, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe(
+                            'no such file or directory at target path');
                     }
                 });
     
-                test('invalid targetPath path.', async () => {
+                test('no folder at targetPath.', async () => {
                     try {
                         const targetPath = 'not-a-real-path';
                         const keyName = await cacheAction.createCacheKey('"test" | testData | testData/test.json', __dirname);
         
                         await cacheAction.createCacheEntry(targetPath, keyName);
                     } catch (error) {
-                        expect(error.message).toStrictEqual(expect.stringContaining('no such file or directory'));
+                        expect(error.message).toBe('no such file or directory at target path');
+                    }
+                });
+
+                test('empty folder at targetPath.', async () => {
+                    try {
+                        const targetPath = vars.emptyDir;
+                        const keyName = await cacheAction.createCacheKey('"test" | testData | emptyDir', __dirname);
+        
+                        await cacheAction.createCacheEntry(targetPath, keyName);
+                    } catch (error) {
+                        expect(error.message).toBe('nothing to cache: directory at target path is empty');
                     }
                 });
             });

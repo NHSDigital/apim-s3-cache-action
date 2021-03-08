@@ -16,11 +16,8 @@ const vars = {
     testDataDir: '/testdata',
     extractDir: '/extract_location',
     virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
-    extractVenv: `${__dirname}/../../../data/anotherVenv` // Data extracted to reduce extension size
-};
-
-global.console = {
-    log: jest.fn()
+    extractVenv: `${__dirname}/../../../data/anotherVenv`, // Data extracted to reduce extension size
+    emptyDir: '/emptyDir'
 };
 
 describe('taskUtils', () => {
@@ -37,12 +34,16 @@ describe('taskUtils', () => {
     });
 
     beforeEach(async () => {
+        global.console = {
+            log: jest.fn()
+        };
         const config = {};
         config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
         config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
         config[vars.extractVenv] = {/** empty directory */};
+        config[vars.emptyDir] = {/** empty directory */};
         mockFs(config);
         randomBucket = uuidv4();
         await awsS3Client.createBucket({Bucket: randomBucket}).promise();
@@ -222,12 +223,45 @@ describe('taskUtils', () => {
     });
 
     describe('uploadCache', () => {
-        // HAPPY PATH
-        // Uploads file ? does it need to report
-        // Uploads folder ? does it need to report
-        // No cacheRestored reported - sets result to no cache reported
-        // cacheRestored reported - sets result to cache exists
         describe('happy path', () => {
+            test('uploads file and reports success', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData/test.json',
+                    location: `${vars.testDataDir}/test.json`,
+                    bucket: randomBucket
+                };
+
+                await restoreCache(pipelineInput, awsS3Client);
+
+                tl.setResult = jest.fn()
+
+                await uploadCache(pipelineInput, awsS3Client);
+
+                expect(tl.setResult).toHaveBeenCalledWith(
+                    tl.TaskResult.Succeeded,
+                    "Uploaded to cache."
+                );
+            });
+
+            test('uploads directory and reports success', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.testDataDir,
+                    bucket: randomBucket
+                };
+
+                await restoreCache(pipelineInput, awsS3Client);
+
+                tl.setResult = jest.fn()
+
+                await uploadCache(pipelineInput, awsS3Client);
+
+                expect(tl.setResult).toHaveBeenCalledWith(
+                    tl.TaskResult.Succeeded,
+                    "Uploaded to cache."
+                );
+            });
+
             test('upload skipped - no cache reported', async () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
@@ -244,17 +278,92 @@ describe('taskUtils', () => {
                     "No cache reported. Upload skipped."
                 );
             });
+
+            test('upload skipped - cache exists', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                };
+                const pathToDir = `${vars.testDataDir}`;
+                const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
+                await cacheAction.createCacheEntry(pathToDir, keyName);
+                await restoreCache(pipelineInput, awsS3Client);
+
+                tl.setResult = jest.fn()
+
+                await uploadCache(pipelineInput, awsS3Client);
+
+                expect(tl.setResult).toHaveBeenCalledWith(
+                    tl.TaskResult.Skipped,
+                    "Cache exists. Upload skipped."
+                );
+            });
         });
 
-        // ERROR SCENARIOS
-        // no file at path to file
-        // empty dir at path to dir
         describe('error scenarios', () => {
+            test('no file at file location', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData/not-a-file.json',
+                    location: `${vars.testDataDir}/not-a-file.json`,
+                    bucket: randomBucket
+                };
+
+                try {
+                    tl.setVariable('CacheRestored', 'false');
+    
+                    await uploadCache(pipelineInput, awsS3Client);
+                    
+                } catch (error) {
+                    expect(error.message).toBe(
+                        'no such file or directory at target path'
+                    );
+                }
+            });
+
+            test('no directory at directory location', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/not-a-dir | not-a-dir',
+                    location: 'not-a-dir',
+                    bucket: randomBucket
+                };
+
+                try {
+                    tl.setVariable('CacheRestored', 'false');
+    
+                    await uploadCache(pipelineInput, awsS3Client);
+                    
+                } catch (error) {
+                    expect(error.message).toBe(
+                        'no such file or directory at target path'
+                    );
+                }
+            });
+
+            test('empty folder at location', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/emptyDir | emptyDir',
+                    location: vars.emptyDir,
+                    bucket: randomBucket
+                };
+
+                try {
+                    tl.setVariable('CacheRestored', 'false');
+    
+                    await uploadCache(pipelineInput, awsS3Client);
+                    
+                } catch (error) {
+                    expect(error.message).toBe(
+                        'nothing to cache: directory at target path is empty'
+                    );
+                }
+            });
+
             test('no bucket provided', async () => {
                 try {
                     const pipelineInput = {
                         key: '"Test" | data/testData | testData',
-                        location: vars.extractDir,
+                        location: vars.testDataDir,
                         bucket: null
                     };
 
@@ -268,7 +377,7 @@ describe('taskUtils', () => {
                 try {
                     const pipelineInput = {
                         key: null,
-                        location: vars.extractDir,
+                        location: vars.testDataDir,
                         bucket: randomBucket
                     };
 

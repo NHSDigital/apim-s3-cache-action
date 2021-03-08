@@ -7,7 +7,7 @@ const path = require('path');
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
-const { hashFileOrString } = require('./cacheKeyUtils');
+const { hashFileOrString } = require('./s3CacheActionUtils');
 
 class S3CacheAction {
 
@@ -26,10 +26,14 @@ class S3CacheAction {
     }
 
     async createCacheEntry (targetPath, keyName) {
+        if (!fs.existsSync(targetPath)) throw new Error('no such file or directory at target path');
         const pathIsDir = fs.statSync(targetPath).isDirectory();
         let stream;
     
         if (pathIsDir) {
+            if (fs.readdirSync(targetPath).length === 0) {
+                throw new Error('nothing to cache: directory at target path is empty');
+            }
             stream = tar.pack(targetPath);
         } else {
             const pathArr = targetPath.split('/');
@@ -49,7 +53,7 @@ class S3CacheAction {
         ).promise();
      }
 
-     async findCacheEntry (keyName) {
+    async findCacheEntry (keyName) {
         return this.s3Client.getObject(
             {
                 Bucket: this.bucket,

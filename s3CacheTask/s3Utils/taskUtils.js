@@ -34,6 +34,10 @@ const uploadCache = async (pipelineInput, s3Client) => {
         const hashedKey = await cacheAction.createCacheKey(key, targetPath);
 
         await cacheAction.createCacheEntry(targetPath, hashedKey);
+        tl.setResult(
+            tl.TaskResult.Succeeded,
+            "Uploaded to cache."
+        );
         return;
     } else if (!cacheRestored) {
         tl.setResult(

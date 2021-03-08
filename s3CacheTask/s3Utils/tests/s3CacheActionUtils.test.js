@@ -1,9 +1,10 @@
 const mockFs = require('mock-fs');
+const path = require('path');
 const { isPathyChar,
         isPathyPart,
         createHashFromString,
         hashFileOrString,
-        } = require('../cacheKeyUtils');
+        } = require('../s3CacheActionUtils');
 
 describe('isPathyChar', () => {
     test('returns false for invalid file characters', () => {
