@@ -21,7 +21,7 @@ const vars = {
 
 global.console = {
     log: jest.fn()
-}
+};
 
 describe('taskUtils', () => {
     let awsS3Client;
@@ -49,7 +49,10 @@ describe('taskUtils', () => {
         cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket})
     });
 
-    afterEach(mockFs.restore);
+    afterEach(async () => {
+        mockFs.restore();
+        tl.setVariable('CacheRestored', undefined);
+    });
 
     describe('restoreCache', () => {
         describe('happy path', () => {
@@ -224,6 +227,24 @@ describe('taskUtils', () => {
         // Uploads folder ? does it need to report
         // No cacheRestored reported - sets result to no cache reported
         // cacheRestored reported - sets result to cache exists
+        describe('happy path', () => {
+            test('upload skipped - no cache reported', async () => {
+                const pipelineInput = {
+                    key: '"Test" | data/testData | testData',
+                    location: vars.extractDir,
+                    bucket: randomBucket
+                };
+
+                tl.setResult = jest.fn()
+
+                await uploadCache(pipelineInput, awsS3Client);
+
+                expect(tl.setResult).toHaveBeenCalledWith(
+                    tl.TaskResult.Skipped,
+                    "No cache reported. Upload skipped."
+                );
+            });
+        });
 
         // ERROR SCENARIOS
         // no file at path to file
