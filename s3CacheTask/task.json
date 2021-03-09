@@ -35,7 +35,7 @@
             "type": "string",
             "label": "Bucket",
             "defaultValue": "",
-            "required": true,
+            "required": false,
             "helpMarkDown": "Name of S3 bucket item will be cached in"
         },
         {
