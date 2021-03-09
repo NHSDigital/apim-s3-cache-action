@@ -12,8 +12,7 @@ const run = async () => {
         await uploadCache(inputs, null);
     }
     catch (err) {
-        console.log(err.stack)
-        tl.setResult(tl.TaskResult.Failed, err.message);
+        tl.setResult(tl.TaskResult.Failed, `Error message: ${err.message}. Error stack: ${err.stack}. Error: ${err}`);
     }
 };
 
