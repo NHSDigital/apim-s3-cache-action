@@ -8,9 +8,11 @@ const run = async () => {
             location: tl.getInput('location', true),
             bucket: tl.getInput('bucket', true)
         };
+        console.log('running restoreCache');
         await restoreCache(inputs, null);
     }
     catch (err) {
+        console.log(err.stack)
         tl.setResult(tl.TaskResult.Failed, err.message);
     }
 };
