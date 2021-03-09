@@ -57,8 +57,12 @@ stages:
               key: 'node | s3CacheTask/package-lock.json'
               location: 's3CacheTask/node_modules'
               bucket: $(PIPELINE_CACHE_BUCKET)
-              pipelineIsolated: true
+              pipelineIsolated: false
             displayName: cache node modules
+
+          - bash: make install-node
+            condition: ne(variables.CacheRestored, 'true')
+            displayName: Install node dependencies
 
           - task: s3-cache-action@0
             inputs:
@@ -68,10 +72,8 @@ stages:
               pipelineIsolated: false
             displayName: cache virtual env
 
-          - bash: make install-node
-            displayName: Install node dependencies
-
           - bash: make install-poetry
+            condition: ne(variables.CacheRestored, 'true')
             displayName: Install poetry dependencies
 
           - bash: |
