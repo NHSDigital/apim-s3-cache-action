@@ -47,7 +47,6 @@ stages:
               role: "auto-ops"
               profile: "apm_ptl"
               aws_account: "ptl"
-            displayName: Assume AWS role
 
           - task: UsePythonVersion@0
             displayName: "Use Python 3.8"
