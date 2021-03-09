@@ -62,7 +62,7 @@ stages:
 
           - task: s3-cache-action@0
             inputs:
-              key: 'python venv | poetry.lock'
+              key: 'python venv | ./poetry.lock'
               location: '.venv'
               bucket: $(PIPELINE_CACHE_BUCKET)
               pipelineIsolated: true
