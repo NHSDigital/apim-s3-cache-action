@@ -54,16 +54,17 @@ stages:
 
           - task: s3-cache-action@0
             inputs:
-              key: '"node modules" | s3CacheTask/node_modules'
-              location: 's3CacheTask/node_modules'
+              key: '"python venv" | .venv'
+              location: '.venv'
               bucket: $(PIPELINE_CACHE_BUCKET)
-            displayName: Cache node dependencies to s3
+              pipelineIsolated: true
+            displayName: Cache .venv dependencies to s3
 
           - bash: make install-node
-            condition: ne(variables.CacheRestored, 'true')
             displayName: Install node dependencies
 
           - bash: make install-poetry
+            condition: ne(variables.CacheRestored, 'true')
             displayName: Install poetry dependencies
 
           - bash: |
