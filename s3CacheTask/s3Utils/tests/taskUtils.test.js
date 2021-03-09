@@ -65,10 +65,12 @@ describe('taskUtils', () => {
         describe('happy path', () => {
             test('pipelineId is appended to key', () => {
                 const inputKey = '"Test" | data/testData/test.json | test.json';
-                tl.setVariable('System.DefinitionId', '1234');
+                pretestGetVar = tl.getVariable;
+                tl.getVariable = jest.fn(() => { return '1234'});
                 
-                const outputKey = addPipelineIdToKey(inputKey)
-                expect(outputKey).toBe('1234 | ' + inputKey)
+                const outputKey = addPipelineIdToKey(inputKey);
+                expect(outputKey).toBe('1234 | ' + inputKey);
+                tl.getVariable = pretestGetVar;
             });
         });
 
@@ -76,9 +78,9 @@ describe('taskUtils', () => {
             test('pipelineId is not appended to key', () => {
                 try {
                     const inputKey = '"Test" | data/testData/test.json | test.json';
-                    addPipelineIdToKey(inputKey)
+                    addPipelineIdToKey(inputKey);
                 } catch (error) {
-                    expect(error.message).toBe('Pipeline ID undefined, check var: $(System.DefinitionId)')
+                    expect(error.message).toBe('Pipeline ID undefined, check var: $(System.DefinitionId)');
                 }
             });
         });

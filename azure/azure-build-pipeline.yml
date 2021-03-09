@@ -60,7 +60,7 @@ stages:
             displayName: Cache node dependencies to s3
 
           - bash: make install-node
-            condition: ne(variables.CACHE_RESTORED, 'true')
+            condition: ne(variables.CacheRestored, 'true')
             displayName: Install node dependencies
 
           - bash: make install-poetry
