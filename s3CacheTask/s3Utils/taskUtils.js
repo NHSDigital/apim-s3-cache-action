@@ -2,21 +2,24 @@ const tl = require('azure-pipelines-task-lib/task');
 const path = require('path');
 const { S3CacheAction } = require('./s3CacheAction');
 
+const addPipelineIdToKey = (key) => {
+    const pipelineId = tl.getVariable('System.DefinitionId');
+    if (!pipelineId) throw new Error('Pipeline ID undefined, check var: $(System.DefinitionId)')
+    console.log(`Isolated caching for pipeline: ${pipelineId}`);
+    return pipelineId + ' | ' + key;
+};
+
 const restoreCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket } = pipelineInput;
-    console.log('Initialise S3CacheAction')
+    const { key, location, bucket, pipelineIsolated } = pipelineInput;
     const cacheAction = new S3CacheAction({s3Client, bucket});
-    console.log('resolve path')
-    const targetPath = path.resolve(tl.getVariable("System.DefaultWorkingDirectory") || process.cwd(),
+    const targetPath = path.resolve(tl.getVariable('System.DefaultWorkingDirectory') || process.cwd(),
                                     location);
 
-    console.log('create cache key')
-    const hashedKey = await cacheAction.createCacheKey(key, targetPath);
+    const keyToHash = pipelineIsolated ? addPipelineIdToKey(key) : key;
+    const hashedKey = await cacheAction.createCacheKey(keyToHash, targetPath);
 
-    console.log('maybe get cache entry')
     const cacheReport = await cacheAction.maybeGetCacheEntry(hashedKey, targetPath);
 
-    console.log('report cache')
     const shouldRestore = cacheReport.message === 'cache miss' ? 'false' : 'true'
 
     const restore = {
@@ -29,43 +32,37 @@ const restoreCache = async (pipelineInput, s3Client) => {
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    console.log('get cache restored var')
     const cacheRestored = tl.getVariable('CacheRestored');
 
     if (cacheRestored === 'false') {
-        const { key, location, bucket } = pipelineInput;
-        console.log('Initialise S3CacheAction')
+        const { key, location, bucket, pipelineIsolated } = pipelineInput;
         const cacheAction = new S3CacheAction({s3Client, bucket});
-        console.log('resolve path')
-        const targetPath = path.resolve(tl.getVariable("System.DefaultWorkingDirectory") || process.cwd(),
+        const targetPath = path.resolve(tl.getVariable('System.DefaultWorkingDirectory') || process.cwd(),
                                         location);
+                                        
+        const keyToHash = pipelineIsolated ? addPipelineIdToKey(key) : key;
+        const hashedKey = await cacheAction.createCacheKey(keyToHash, targetPath);
 
-        console.log('create cache key')
-        const hashedKey = await cacheAction.createCacheKey(key, targetPath);
-
-        console.log('uploading to cache')
         await cacheAction.createCacheEntry(targetPath, hashedKey);
         tl.setResult(
             tl.TaskResult.Succeeded,
-            "Uploaded to cache."
+            'Uploaded to cache.'
         );
         return;
     } else if (!cacheRestored) {
-        console.log('no cache restored var logged')
         tl.setResult(
             tl.TaskResult.Skipped,
-            "No cache reported. Upload skipped."
+            'No cache reported. Upload skipped.'
         );
         return;
     } else {
-        console.log('cache exists')
         tl.setResult(
             tl.TaskResult.Skipped,
-            "Cache exists. Upload skipped."
+            'Cache exists. Upload skipped.'
         );
         return;
     }
     
 };
 
-module.exports = { restoreCache, uploadCache };
+module.exports = { restoreCache, uploadCache, addPipelineIdToKey };

@@ -5,7 +5,7 @@ const AWS = require('aws-sdk');
 const tl = require('azure-pipelines-task-lib/task');
 const { v4: uuidv4 } =  require('uuid');
 const { S3CacheAction } = require('../s3CacheAction');
-const { restoreCache, uploadCache } = require('../taskUtils');
+const { restoreCache, uploadCache, addPipelineIdToKey } = require('../taskUtils');
 
 const vars = {
     credentials: {
@@ -21,11 +21,13 @@ const vars = {
 };
 
 describe('taskUtils', () => {
+    let pipelineCacheRestoredResult;
     let awsS3Client;
     let cacheAction;
     let randomBucket;
 
     beforeAll(async () => {
+        pipelineCacheRestoredResult = tl.getVariable('CacheRestored')
         awsS3Client = new AWS.S3({
             credentials: vars.credentials,
             endpoint: vars.endpoint,
@@ -50,9 +52,36 @@ describe('taskUtils', () => {
         cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket})
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         mockFs.restore();
         tl.setVariable('CacheRestored', undefined);
+    });
+
+    afterAll(() => {
+        tl.setVariable('CacheRestored', pipelineCacheRestoredResult);
+    })
+
+    describe('addPipelineIdToKey', () => {
+        describe('happy path', () => {
+            test('pipelineId is appended to key', () => {
+                const inputKey = '"Test" | data/testData/test.json | test.json';
+                tl.setVariable('System.DefinitionId', '1234');
+                
+                const outputKey = addPipelineIdToKey(inputKey)
+                expect(outputKey).toBe('1234 | ' + inputKey)
+            });
+        });
+
+        describe('error scenarios', () => {
+            test('pipelineId is not appended to key', () => {
+                try {
+                    const inputKey = '"Test" | data/testData/test.json | test.json';
+                    addPipelineIdToKey(inputKey)
+                } catch (error) {
+                    expect(error.message).toBe('Pipeline ID undefined, check var: $(System.DefinitionId)')
+                }
+            });
+        });
     });
 
     describe('restoreCache', () => {
@@ -61,7 +90,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData/test.json | test.json',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
@@ -82,7 +112,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData/test.json | test.json',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
@@ -101,7 +132,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
     
                 const pathToDir = `${vars.testDataDir}`;
@@ -122,7 +154,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
     
                 const pathToDir = `${vars.testDataDir}`;
@@ -141,7 +174,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: `"python venv" | fakeVenv | ${vars.virtualEnv}`,
                     location: vars.extractVenv,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
     
                 const pathToVenv = `${vars.virtualEnv}`;
@@ -165,7 +199,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 await restoreCache(pipelineInput, awsS3Client);
@@ -183,7 +218,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: '"Test" | data/testData | testData',
                         location: vars.extractDir,
-                        bucket: null
+                        bucket: null,
+                        pipelineIsolated: false
                     };
 
                     await restoreCache(pipelineInput, awsS3Client);
@@ -197,7 +233,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: null,
                         location: vars.extractDir,
-                        bucket: randomBucket
+                        bucket: randomBucket,
+                        pipelineIsolated: false
                     };
 
                     await restoreCache(pipelineInput, awsS3Client);
@@ -211,7 +248,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: '"Test" | data/testData | testData',
                         location: null,
-                        bucket: randomBucket
+                        bucket: randomBucket,
+                        pipelineIsolated: false
                     };
 
                     await restoreCache(pipelineInput, awsS3Client);
@@ -228,7 +266,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData/test.json',
                     location: `${vars.testDataDir}/test.json`,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 await restoreCache(pipelineInput, awsS3Client);
@@ -247,7 +286,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.testDataDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 await restoreCache(pipelineInput, awsS3Client);
@@ -266,7 +306,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 tl.setResult = jest.fn()
@@ -283,7 +324,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData',
                     location: vars.extractDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -306,7 +348,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/testData | testData/not-a-file.json',
                     location: `${vars.testDataDir}/not-a-file.json`,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 try {
@@ -325,7 +368,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/not-a-dir | not-a-dir',
                     location: 'not-a-dir',
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 try {
@@ -344,7 +388,8 @@ describe('taskUtils', () => {
                 const pipelineInput = {
                     key: '"Test" | data/emptyDir | emptyDir',
                     location: vars.emptyDir,
-                    bucket: randomBucket
+                    bucket: randomBucket,
+                    pipelineIsolated: false
                 };
 
                 try {
@@ -364,7 +409,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: '"Test" | data/testData | testData',
                         location: vars.testDataDir,
-                        bucket: null
+                        bucket: null,
+                        pipelineIsolated: false
                     };
 
                     await uploadCache(pipelineInput, awsS3Client);
@@ -378,7 +424,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: null,
                         location: vars.testDataDir,
-                        bucket: randomBucket
+                        bucket: randomBucket,
+                        pipelineIsolated: false
                     };
 
                     await uploadCache(pipelineInput, awsS3Client);
@@ -392,7 +439,8 @@ describe('taskUtils', () => {
                     const pipelineInput = {
                         key: '"Test" | data/testData | testData',
                         location: null,
-                        bucket: randomBucket
+                        bucket: randomBucket,
+                        pipelineIsolated: false
                     };
 
                     await uploadCache(pipelineInput, awsS3Client);

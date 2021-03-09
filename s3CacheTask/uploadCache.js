@@ -6,7 +6,8 @@ const run = async () => {
         const inputs = {
             key: tl.getInput('key', true),
             location: tl.getInput('location', true),
-            bucket: tl.getInput('bucket', true)
+            bucket: tl.getInput('bucket', true),
+            pipelineIsolated: tl.getInput('pipelineIsolated', false)
         };
         console.log('running uploadCache');
         await uploadCache(inputs, null);

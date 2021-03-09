@@ -37,6 +37,14 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "Name of S3 bucket item will be cached in"
+        },
+        {
+            "name": "pipelineIsolated",
+            "type": "boolean",
+            "label": "Pipeline ID",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Isolate cache to pipeline"
         }
     ],
     "execution": {
