@@ -18,8 +18,9 @@ const restoreCache = async (pipelineInput, s3Client) => {
         name: 'CacheRestored',
         value: shouldRestore
     };
-    console.log(`Cache restored: ${shouldRestore}`);
     tl.setVariable(restore.name, restore.value);
+    console.log(`Cache restored: ${shouldRestore}`);
+    return;
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {

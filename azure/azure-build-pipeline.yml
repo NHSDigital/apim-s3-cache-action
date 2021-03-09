@@ -52,8 +52,19 @@ stages:
             inputs:
               versionSpec: '13.x'
 
-          - bash: make install
-            displayName: Install dependencies
+          - task: s3-cache-action@0
+            inputs:
+              key: '"node modules" | s3CacheTask/node_modules'
+              location: 's3CacheTask/node_modules'
+              bucket: $(PIPELINE_CACHE_BUCKET)
+            displayName: Cache node dependencies to s3
+
+          - bash: make install-node
+            condition: ne(variables.CACHE_RESTORED, 'true')
+            displayName: Install node dependencies
+
+          - bash: make install-poetry
+            displayName: Install poetry dependencies
 
           - bash: |
               make test
@@ -62,10 +73,3 @@ stages:
               make down
               exit ${exit_code}
             displayName: Run s3 tests
-
-          # - task: s3-cache-action@0
-          #   inputs:
-          #     key: '"Test Data" | data/testData'
-          #     location: 'data/testData'
-          #     bucket: $(PIPELINE_CACHE_BUCKET)
-          #   displayName: Cache to s3
