@@ -65,7 +65,7 @@ stages:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
               bucket: $(PIPELINE_CACHE_BUCKET)
-              pipelineIsolated: true
+              pipelineIsolated: false
             displayName: cache virtual env
 
           - bash: make install-node
