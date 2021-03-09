@@ -72,7 +72,6 @@ stages:
             displayName: Install node dependencies
 
           - bash: make install-poetry
-            condition: ne(variables.CacheRestored, 'true')
             displayName: Install poetry dependencies
 
           - bash: |
