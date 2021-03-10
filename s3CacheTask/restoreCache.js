@@ -1,5 +1,6 @@
 const tl = require('azure-pipelines-task-lib/task');
-const { restoreCache, debug } = require('./s3Utils/taskUtils');
+const { restoreCache } = require('./s3Utils/taskUtils');
+const { debug } = require('./s3Utils/debug');
 
 const run = async () => {
     try {
