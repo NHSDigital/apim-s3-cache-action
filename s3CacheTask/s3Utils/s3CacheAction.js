@@ -8,6 +8,7 @@ const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
 const { hashFileOrString } = require('./s3CacheActionUtils');
+const { debug } = require('./debug');
 
 class S3CacheAction {
 
@@ -19,10 +20,12 @@ class S3CacheAction {
 
     async createCacheKey (key, workingDir) {
         if (!key) return null;
+        debug(`input key: ${key}`);
         const keyParts = key.split('|').map(part => part.trim());
         const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
-        
-        return keyPartsHashed.join('/');
+        const hashedKey = keyPartsHashed.join('/');
+        debug(`hashed key: ${hashedKey}`);
+        return hashedKey;
     }
 
     async createCacheEntry (targetPath, keyName) {
@@ -110,4 +113,4 @@ class S3CacheAction {
     }
 }
 
-module.exports = { S3CacheAction };
+module.exports = S3CacheAction;

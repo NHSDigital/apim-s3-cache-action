@@ -23,3 +23,6 @@ down:
 
 test: up
 	make -C s3CacheTask test
+
+test-verbose: up
+	make -C s3CacheTask test-verbose

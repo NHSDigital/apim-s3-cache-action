@@ -1,5 +1,4 @@
 const mockFs = require('mock-fs');
-const path = require('path');
 const { isPathyChar,
         isPathyPart,
         createHashFromString,

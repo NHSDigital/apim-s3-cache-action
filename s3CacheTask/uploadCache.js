@@ -1,5 +1,5 @@
 const tl = require('azure-pipelines-task-lib/task');
-const { uploadCache } = require('./s3Utils/taskUtils');
+const { uploadCache, debug } = require('./s3Utils/taskUtils');
 
 const run = async () => {
     try {
@@ -14,7 +14,7 @@ const run = async () => {
             bucket: bucket,
             pipelineIsolated: tl.getInput('pipelineIsolated', false)
         };
-        console.log('running uploadCache');
+        debug('Running: uploadCache');
         await uploadCache(inputs, null);
     }
     catch (err) {

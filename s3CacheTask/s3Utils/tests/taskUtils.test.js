@@ -4,8 +4,8 @@ const path = require('path');
 const AWS = require('aws-sdk');
 const tl = require('azure-pipelines-task-lib/task');
 const { v4: uuidv4 } =  require('uuid');
-const { S3CacheAction } = require('../s3CacheAction');
-const { restoreCache, uploadCache, addPipelineIdToKey } = require('../taskUtils');
+const { addPipelineIdToKey, restoreCache, uploadCache } = require('../taskUtils');
+const S3CacheAction = require('../s3CacheAction');
 
 const vars = {
     credentials: {
@@ -27,12 +27,12 @@ describe('taskUtils', () => {
     let randomBucket;
 
     beforeAll(async () => {
-        pipelineCacheRestoredResult = tl.getVariable('CacheRestored')
         awsS3Client = new AWS.S3({
             credentials: vars.credentials,
             endpoint: vars.endpoint,
             s3ForcePathStyle: true
         });
+        pipelineCacheRestoredResult = tl.getVariable('CacheRestored')
     });
 
     beforeEach(async () => {
@@ -117,6 +117,7 @@ describe('taskUtils', () => {
                     bucket: randomBucket,
                     pipelineIsolated: false
                 };
+                process.env.SHOULD_DEBUG = true;
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -159,6 +160,7 @@ describe('taskUtils', () => {
                     bucket: randomBucket,
                     pipelineIsolated: false
                 };
+                process.env.SHOULD_DEBUG = true;
     
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
@@ -204,6 +206,7 @@ describe('taskUtils', () => {
                     bucket: randomBucket,
                     pipelineIsolated: false
                 };
+                process.env.SHOULD_DEBUG = true;
 
                 await restoreCache(pipelineInput, awsS3Client);
 

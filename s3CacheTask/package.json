@@ -5,7 +5,8 @@
   "main": "restoreCache.js",
   "scripts": {
     "test": "jest",
-    "test-watch": "jest --watch"
+    "test-watch": "jest --watch",
+    "test-verbose": "jest --verbose"
   },
   "repository": {
     "type": "git",

@@ -45,6 +45,14 @@
             "defaultValue": false,
             "required": false,
             "helpMarkDown": "Isolate cache to pipeline"
+        },
+        {
+            "name": "debug",
+            "type": "boolean",
+            "label": "Debug",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Should debug or not"
         }
     ],
     "execution": {
