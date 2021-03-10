@@ -63,22 +63,25 @@ describe('taskUtils', () => {
 
     describe('addPipelineIdToKey', () => {
         describe('happy path', () => {
-            test('pipelineId is appended to key', () => {
+            test('pipelineId is appended to key', async () => {
                 const inputKey = '"Test" | data/testData/test.json | test.json';
                 pretestGetVar = tl.getVariable;
                 tl.getVariable = jest.fn(() => { return '1234'});
+
+                const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
                 
-                const outputKey = addPipelineIdToKey(inputKey);
-                expect(outputKey).toBe('1234 | ' + inputKey);
+                const outputKey = addPipelineIdToKey(hashedKey);
+                expect(outputKey).toBe('1234/' + hashedKey);
                 tl.getVariable = pretestGetVar;
             });
         });
 
         describe('error scenarios', () => {
-            test('pipelineId is not appended to key', () => {
+            test('pipelineId is not appended to key', async () => {
                 try {
                     const inputKey = '"Test" | data/testData/test.json | test.json';
-                    addPipelineIdToKey(inputKey);
+                    const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
+                    addPipelineIdToKey(hashedKey);
                 } catch (error) {
                     expect(error.message).toBe('Pipeline ID undefined, check var: $(System.DefinitionId)');
                 }

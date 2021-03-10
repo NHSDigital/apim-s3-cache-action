@@ -5,9 +5,9 @@ const { debug } = require('./debug');
 
 const addPipelineIdToKey = (key) => {
     const pipelineId = tl.getVariable('System.DefinitionId');
-    if (!pipelineId) throw new Error('Pipeline ID undefined, check var: $(System.DefinitionId)')
+    if (!pipelineId) throw new Error('Pipeline ID undefined, check var: $(System.DefinitionId)');
     debug(`Isolated caching for pipeline: ${pipelineId}`);
-    return pipelineId + ' | ' + key;
+    return pipelineId + '/' + key;
 };
 
 const restoreCache = async (pipelineInput, s3Client) => {
@@ -18,12 +18,13 @@ const restoreCache = async (pipelineInput, s3Client) => {
 
     debug(`Extracting from: ${targetPath}`);
 
-    const keyToHash = pipelineIsolated ? addPipelineIdToKey(key) : key;
-    const hashedKey = await cacheAction.createCacheKey(keyToHash, workingDir);
+    const hashedKey = await cacheAction.createCacheKey(key, workingDir);
+    const formattedKey = pipelineIsolated ? addPipelineIdToKey(hashedKey) : hashedKey;
 
-    debug(`Evaluating S3 cache for path: s3://${bucket}/${hashedKey}`);
+    debug(`Using S3 cache key: ${formattedKey}`);
+    debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
 
-    const cacheReport = await cacheAction.maybeGetCacheEntry(hashedKey, targetPath);
+    const cacheReport = await cacheAction.maybeGetCacheEntry(formattedKey, targetPath);
 
     const shouldRestore = cacheReport.message === 'cache miss' ? 'false' : 'true'
 
@@ -42,17 +43,18 @@ const uploadCache = async (pipelineInput, s3Client) => {
     if (cacheRestored === 'false') {
         const { key, location, bucket, pipelineIsolated } = pipelineInput;
         const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
-        const targetPath = path.resolve(tl.getVariable('System.DefaultWorkingDirectory') || process.cwd(),
-                                        location);
+        const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+        const targetPath = path.resolve(workingDir, location);
         
         debug(`Extracting from: ${targetPath}`)
 
-        const keyToHash = pipelineIsolated ? addPipelineIdToKey(key) : key;
-        const hashedKey = await cacheAction.createCacheKey(keyToHash, targetPath);
+        const hashedKey = await cacheAction.createCacheKey(key, workingDir);
+        const formattedKey = pipelineIsolated ? addPipelineIdToKey(hashedKey) : hashedKey;
 
-        debug(`Evaluating S3 cache for path: s3://${bucket}/${hashedKey}`)
+        debug(`Using S3 cache key: ${formattedKey}`);
+        debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`)
 
-        await cacheAction.createCacheEntry(targetPath, hashedKey);
+        await cacheAction.createCacheEntry(targetPath, formattedKey);
         tl.setResult(
             tl.TaskResult.Succeeded,
             'Uploaded to cache.'
