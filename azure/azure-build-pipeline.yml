@@ -83,6 +83,6 @@ stages:
               make down
               cd ../scripts
               export VIRTUAL_ENV_PATH="../.venv"
-              sh scripts/check-python-venv-fixed.sh
+              sh check-python-venv-fixed.sh
               exit ${exit_code}
             displayName: Run s3 tests
