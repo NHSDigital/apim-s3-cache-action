@@ -64,16 +64,16 @@ stages:
             condition: ne(variables.CacheRestored, 'true')
             displayName: Install node dependencies
 
-          - task: s3-cache-action@0
-            inputs:
-              key: 'python venv | ./poetry.lock'
-              location: '.venv'
-              # pipelineIsolated: false
-              debug: true
-            displayName: cache virtual env
+          # - task: s3-cache-action@0
+          #   inputs:
+          #     key: 'python venv | ./poetry.lock'
+          #     location: '.venv'
+          #     # pipelineIsolated: false
+          #     debug: true
+          #   displayName: cache virtual env
 
           - bash: make install-poetry
-            condition: ne(variables.CacheRestored, 'true')
+            # condition: ne(variables.CacheRestored, 'true')
             displayName: Install poetry dependencies
 
           - bash: |
