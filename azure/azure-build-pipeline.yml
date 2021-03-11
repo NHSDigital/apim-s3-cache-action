@@ -56,8 +56,8 @@ stages:
             inputs:
               key: 'node | s3CacheTask/package-lock.json'
               location: 's3CacheTask/node_modules'
-              pipelineIsolated: true
-              debug: true
+              # pipelineIsolated: false
+              # debug: false
             displayName: cache node modules
 
           - bash: make install-node
@@ -68,8 +68,8 @@ stages:
             inputs:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
-              pipelineIsolated: true
-              debug: true
+              # pipelineIsolated: false
+              # debug: false
             displayName: cache virtual env
 
           - bash: make install-poetry

@@ -4,18 +4,21 @@ const { debug } = require('./s3Utils/debug');
 
 const run = async () => {
     try {
-        const bucket = tl.getInput('bucket', false) || process.env.PIPELINE_CACHE_BUCKET || '';
+        const bucket = tl.getInput('bucket', false) || tl.getVariable('PIPELINE_CACHE_BUCKET') || '';
         if (bucket === '') {
             tl.setResult(tl.TaskResult.Failed, `bucket input or $PIPELINE_CACHE_BUCKET required`);
-            return
-        }
+            return;
+        };
+
         const inputs = {
             key: tl.getInput('key', true),
             location: tl.getInput('location', true),
             bucket: bucket,
             pipelineIsolated: tl.getInput('pipelineIsolated', false)
         };
+
         debug('Running: uploadCache');
+        
         await uploadCache(inputs, null);
     }
     catch (err) {
