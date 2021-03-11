@@ -10,6 +10,11 @@ const addPipelineIdToKey = (key) => {
     return pipelineId + '/' + key;
 };
 
+const parseHrtimeToSeconds = (hrtime) => {
+    const seconds = (hrtime[0] + (hrtime[1] / 1e9)).toFixed(3);
+    return seconds;
+}
+
 const restoreCache = async (pipelineInput, s3Client) => {
     const { key, location, bucket, pipelineIsolated } = pipelineInput;
     const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
@@ -24,7 +29,11 @@ const restoreCache = async (pipelineInput, s3Client) => {
     debug(`Using S3 cache key: ${formattedKey}`);
     debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
 
+    const startTime = process.hrtime();
     const cacheReport = await cacheAction.maybeGetCacheEntry(formattedKey, targetPath);
+    const elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
+
+    debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`)
 
     debug(`Cache report from S3: ${cacheReport.message}`);
 

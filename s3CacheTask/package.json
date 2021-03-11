@@ -25,6 +25,7 @@
     "crypto": "^1.0.1",
     "docker": "^1.0.0",
     "fs": "^0.0.1-security",
+    "get-folder-size": "^2.0.1",
     "path": "^0.12.7",
     "tar-fs": "^2.1.1",
     "tar-stream": "^2.2.0"

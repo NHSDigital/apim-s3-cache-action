@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
+const getSize = require('get-folder-size');
 const stream = require('stream');
 const path = require('path');
 const { promisify } = require('util')
@@ -57,12 +58,18 @@ class S3CacheAction {
      }
 
     async findCacheEntry (keyName) {
-        return this.s3Client.getObject(
+        const request = this.s3Client.getObject(
             {
                 Bucket: this.bucket,
                 Key: keyName
             }
-        ).createReadStream();
+        )
+        let tarSize
+        request.on('httpHeaders', function(statusCode, headers, response) {
+            tarSize = headers['content-length'];
+        });
+          
+        return { stream: request.createReadStream(), tarSize }
     }
 
     async maybeFixPythonVenv (targetPath) {
@@ -96,13 +103,24 @@ class S3CacheAction {
     async maybeGetCacheEntry (keyName, destination) {
         try {
             const cacheData = await this.findCacheEntry(keyName);
-            await pipeline(cacheData, tar.extract(destination));
+            await pipeline(cacheData.stream, tar.extract(destination));
             const fixedPythonVenv = await this.maybeFixPythonVenv(destination);
+            let extractedSize
+            getSize(destination, (err, size) => {
+                if (err) throw err;
+                extractedSize = size;
+            });
 
             if (fixedPythonVenv) {
-                return { message: 'cache hit and python paths fixed' };
+                return { message: 'cache hit and python paths fixed',
+                         tarSize: cacheData.tarSize,
+                         extractedSize
+                        };
             } else {
-                return { message: 'cache hit' };
+                return { message: 'cache hit',
+                         tarSize: cacheData.tarSize,
+                         extractedSize
+                        };
             }
         } catch (error) {
             if (error.message === 'The specified key does not exist.') {
