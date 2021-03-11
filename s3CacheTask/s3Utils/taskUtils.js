@@ -19,7 +19,7 @@ const restoreCache = async (pipelineInput, s3Client) => {
     debug(`Extracting from: ${targetPath}`);
 
     const hashedKey = await cacheAction.createCacheKey(key, workingDir);
-    const formattedKey = pipelineIsolated ? addPipelineIdToKey(hashedKey) : hashedKey;
+    const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
 
     debug(`Using S3 cache key: ${formattedKey}`);
     debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
