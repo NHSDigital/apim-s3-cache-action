@@ -9,6 +9,8 @@ const run = async () => {
             tl.setResult(tl.TaskResult.Failed, `bucket input or $PIPELINE_CACHE_BUCKET required`);
             return
         }
+
+        process.env.SHOULD_DEBUG = tl.getInput('debug', true);
         
         const inputs = {
             key: tl.getInput('key', true),

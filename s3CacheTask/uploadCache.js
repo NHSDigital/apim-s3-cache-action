@@ -10,6 +10,8 @@ const run = async () => {
             return;
         };
 
+        process.env.SHOULD_DEBUG = tl.getInput('debug', true);
+
         const inputs = {
             key: tl.getInput('key', true),
             location: tl.getInput('location', true),
