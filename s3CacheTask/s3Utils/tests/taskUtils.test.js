@@ -14,7 +14,7 @@ const vars = {
     },
     endpoint: 'http://localhost:4666',
     testDataDir: '/testdata',
-    extractDir: '/extract_location',
+    extractDir: `${__dirname}/../../../data/extract_location`,
     virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
     extractVenv: `${__dirname}/../../../data/anotherVenv`, // Data extracted to reduce extension size
     emptyDir: '/emptyDir'

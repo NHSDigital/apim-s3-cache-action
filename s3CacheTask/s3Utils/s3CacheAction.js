@@ -2,7 +2,6 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const tar = require('tar-fs');
 const tarStream = require('tar-stream');
-const getSize = require('get-folder-size');
 const stream = require('stream');
 const path = require('path');
 const { promisify } = require('util')
@@ -58,18 +57,12 @@ class S3CacheAction {
      }
 
     async findCacheEntry (keyName) {
-        const request = this.s3Client.getObject(
+        return this.s3Client.getObject(
             {
                 Bucket: this.bucket,
                 Key: keyName
             }
-        )
-        let tarSize
-        request.on('httpHeaders', function(statusCode, headers, response) {
-            tarSize = headers['content-length'];
-        });
-          
-        return { stream: request.createReadStream(), tarSize }
+        ).createReadStream();
     }
 
     async maybeFixPythonVenv (targetPath) {
@@ -103,22 +96,30 @@ class S3CacheAction {
     async maybeGetCacheEntry (keyName, destination) {
         try {
             const cacheData = await this.findCacheEntry(keyName);
-            await pipeline(cacheData.stream, tar.extract(destination));
+            let tarSize = 0;
+            await pipeline(cacheData.on('data', function(chunk){
+                tarSize += chunk.length;
+              }), tar.extract(destination));
+
             const fixedPythonVenv = await this.maybeFixPythonVenv(destination);
-            let extractedSize
-            getSize(destination, (err, size) => {
-                if (err) throw err;
-                extractedSize = size;
-            });
+            
+            const bashCmd = `du -h -d 0 "${destination}"`;
+            const { err, stdout, stderr } = await exec(bashCmd);
+            if (err) throw err;
+            if (stderr) {
+                throw new Error(stderr);
+            }
+            const extractedSize = stdout.split('/')[0]
+            
 
             if (fixedPythonVenv) {
                 return { message: 'cache hit and python paths fixed',
-                         tarSize: cacheData.tarSize,
+                         tarSize,
                          extractedSize
                         };
             } else {
                 return { message: 'cache hit',
-                         tarSize: cacheData.tarSize,
+                         tarSize,
                          extractedSize
                         };
             }
