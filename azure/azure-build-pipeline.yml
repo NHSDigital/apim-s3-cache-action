@@ -56,8 +56,8 @@ stages:
             inputs:
               key: 'node | s3CacheTask/package-lock.json'
               location: 's3CacheTask/node_modules'
-              bucket: $(PIPELINE_CACHE_BUCKET)
-              pipelineIsolated: false
+              pipelineIsolated: true
+              debug: true
             displayName: cache node modules
 
           - bash: make install-node
@@ -68,8 +68,8 @@ stages:
             inputs:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
-              bucket: $(PIPELINE_CACHE_BUCKET)
-              pipelineIsolated: false
+              pipelineIsolated: true
+              debug: true
             displayName: cache virtual env
 
           - bash: make install-poetry
@@ -81,5 +81,8 @@ stages:
               exit_code=$?
               echo Exit code - ${exit_code}
               make down
+              cd ../scripts
+              export VIRTUAL_ENV_PATH="../.venv"
+              sh scripts/check-python-venv-fixed.sh
               exit ${exit_code}
             displayName: Run s3 tests
