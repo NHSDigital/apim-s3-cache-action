@@ -81,7 +81,7 @@ stages:
               exit_code=$?
               echo Exit code - ${exit_code}
               make down
-              cd ../scripts
+              cd scripts
               export VIRTUAL_ENV_PATH="../.venv"
               sh check-python-venv-fixed.sh
               exit ${exit_code}
