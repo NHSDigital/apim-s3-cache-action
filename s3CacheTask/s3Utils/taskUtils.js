@@ -33,18 +33,22 @@ const restoreCache = async (pipelineInput, s3Client) => {
     const cacheReport = await cacheAction.maybeGetCacheEntry(formattedKey, targetPath);
     const elapsedSeconds = parseHrtimeToSeconds(process.hrtime(startTime));
 
-    debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`)
-
     debug(`Cache report from S3: ${cacheReport.message}`);
 
-    const shouldRestore = cacheReport.message === 'cache miss' ? 'false' : 'true'
+    let cacheRestored;
+    if (cacheReport.message === 'cache miss') {
+        cacheRestored = 'false';
+    } else {
+        cacheRestored = 'true';
+        debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`);
+    }
 
     const restore = {
         name: 'CacheRestored',
-        value: shouldRestore
+        value: cacheRestored
     };
     tl.setVariable(restore.name, restore.value);
-    debug(`Cache restored: ${shouldRestore}`);
+    debug(`Cache restored: ${cacheRestored}`);
     return;
 };
 
@@ -63,13 +67,14 @@ const uploadCache = async (pipelineInput, s3Client) => {
         const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
 
         debug(`Using S3 cache key: ${formattedKey}`);
-        debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`)
+        debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
 
         await cacheAction.createCacheEntry(targetPath, formattedKey);
         tl.setResult(
             tl.TaskResult.Succeeded,
             'Uploaded to cache.'
         );
+        debug('Uploaded to cache.');
         return;
     } else if (!cacheRestored) {
         tl.setResult(
