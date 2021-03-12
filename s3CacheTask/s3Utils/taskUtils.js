@@ -26,7 +26,7 @@ const restoreCache = async (pipelineInput, s3Client) => {
 
     // Create and set S3 cache key
     const hashedKey = await cacheAction.createCacheKey(key, workingDir);
-    const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
+    const formattedKey = pipelineIsolated === 'true' ? 'pipeline/' + addPipelineIdToKey(hashedKey) : 'global/' + hashedKey;
     debug(`Using S3 cache key: ${formattedKey}`);
 
     // Look up cache entry in S3 bucket
