@@ -53,6 +53,14 @@
             "defaultValue": false,
             "required": false,
             "helpMarkDown": "Should debug or not"
+        },
+        {
+            "name": "alias",
+            "type": "string",
+            "label": "Cache alias",
+            "helpMarkDown": "An optional alias to the cache to control the name of the output variable.",
+            "defaultValue": "",
+            "required": false
         }
     ],
     "execution": {

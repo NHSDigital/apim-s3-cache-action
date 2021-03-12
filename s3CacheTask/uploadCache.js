@@ -16,7 +16,8 @@ const run = async () => {
             key: tl.getInput('key', true),
             location: tl.getInput('location', true),
             bucket: bucket,
-            pipelineIsolated: tl.getInput('pipelineIsolated', false)
+            pipelineIsolated: tl.getInput('pipelineIsolated', false),
+            alias: tl.getInput('alias', false)
         };
 
         debug('Running: uploadCache');

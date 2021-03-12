@@ -52,28 +52,30 @@ stages:
             inputs:
               versionSpec: '13.x'
 
-          # - task: s3-cache-action@0
-          #   inputs:
-          #     key: 'node | s3CacheTask/package-lock.json'
-          #     location: 's3CacheTask/node_modules'
-          #     # pipelineIsolated: false
-          #     debug: true
-          #   displayName: cache node modules
+          - task: s3-cache-action@0
+            inputs:
+              key: 'node | s3CacheTask/package-lock.json'
+              location: 's3CacheTask/node_modules'
+              pipelineIsolated: false
+              debug: true
+              alias: 'NodeModules'
+            displayName: cache node modules
 
           - bash: make install-node
-            # condition: ne(variables.CacheRestored, 'true')
+            condition: ne(variables.CacheRestored-NodeModules, 'true')
             displayName: Install node dependencies
 
           - task: s3-cache-action@0
             inputs:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
-              # pipelineIsolated: false
+              pipelineIsolated: false
               debug: true
+              alias: 'Poetry'
             displayName: cache virtual env
 
           - bash: make install-poetry
-            condition: ne(variables.CacheRestored, 'true')
+            condition: ne(variables.CacheRestored-Poetry, 'true')
             displayName: Install poetry dependencies
 
           - bash: |

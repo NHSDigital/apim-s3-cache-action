@@ -16,7 +16,7 @@ const parseHrtimeToSeconds = (hrtime) => {
 }
 
 const restoreCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
     const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
     const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
     const targetPath = path.resolve(workingDir, location);
@@ -42,9 +42,11 @@ const restoreCache = async (pipelineInput, s3Client) => {
         cacheRestored = 'true';
         debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`);
     }
+    const output =
+        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
 
     const restore = {
-        name: 'CacheRestored',
+        name: output,
         value: cacheRestored
     };
     tl.setVariable(restore.name, restore.value);
@@ -53,10 +55,12 @@ const restoreCache = async (pipelineInput, s3Client) => {
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    const cacheRestored = tl.getVariable('CacheRestored');
+    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
+    const output =
+        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
+    const cacheRestored = tl.getVariable(output);
 
     if (cacheRestored === 'false') {
-        const { key, location, bucket, pipelineIsolated } = pipelineInput;
         const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
         const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
         const targetPath = path.resolve(workingDir, location);
