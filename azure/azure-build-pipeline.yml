@@ -52,6 +52,9 @@ stages:
             inputs:
               versionSpec: '13.x'
 
+          - bash: nvm install-latest-npm
+            displayName: update npm
+
           - task: s3-cache-action@0
             inputs:
               key: 'node | s3CacheTask/package-lock.json'
