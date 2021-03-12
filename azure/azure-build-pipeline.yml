@@ -52,27 +52,51 @@ stages:
             inputs:
               versionSpec: '13.x'
 
-          - bash: nvm install-latest-npm
+          - bash: |
+              node --version
+              npm --version
+            displayName: versions
+
+          - bash: |
+              source ~/.nvm/nvm.sh
+              node --version
+              npm --version
+              nvm --version
+            displayName: versions2
+
+          - bash: |
+              set -e
+              source ~/.nvm/nvm.sh
+              nvm install-latest-npm
             displayName: update npm
 
-          - task: s3-cache-action@0
+          - bash: |
+              source ~/.nvm/nvm.sh
+              node --version
+              npm --version
+              nvm --version
+            displayName: versions3  
+
+          - task: s3-cache-action@1
             inputs:
               key: 'node | s3CacheTask/package-lock.json'
               location: 's3CacheTask/node_modules'
-              pipelineIsolated: false
+              pipelineIsolated: true
               debug: true
               alias: 'NodeModules'
             displayName: cache node modules
 
-          - bash: make install-node
+          - bash: |
+              source ~/.nvm/nvm.sh
+              make install-node
             condition: ne(variables['CacheRestored-NodeModules'], 'true')
             displayName: Install node dependencies
 
-          - task: s3-cache-action@0
+          - task: s3-cache-action@1
             inputs:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
-              pipelineIsolated: false
+              pipelineIsolated: true
               debug: true
               alias: 'Poetry'
             displayName: cache virtual env
