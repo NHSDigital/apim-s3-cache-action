@@ -101,7 +101,7 @@ describe('taskUtils', () => {
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToFile, keyName);
+                await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
     
@@ -124,7 +124,7 @@ describe('taskUtils', () => {
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToFile, keyName);
+                await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
 
                 await restoreCache(pipelineInput, awsS3Client);
 
@@ -144,7 +144,7 @@ describe('taskUtils', () => {
     
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToDir, keyName);
+                await cacheAction.createCacheEntry(pathToDir, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
     
@@ -167,7 +167,7 @@ describe('taskUtils', () => {
     
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToDir, keyName);
+                await cacheAction.createCacheEntry(pathToDir, 'global/' + keyName);
 
                 await restoreCache(pipelineInput, awsS3Client);
 
@@ -187,7 +187,7 @@ describe('taskUtils', () => {
     
                 const pathToVenv = `${vars.virtualEnv}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToVenv, keyName);
+                await cacheAction.createCacheEntry(pathToVenv, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
     
@@ -337,7 +337,7 @@ describe('taskUtils', () => {
                 };
                 const pathToDir = `${vars.testDataDir}`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToDir, keyName);
+                await cacheAction.createCacheEntry(pathToDir, 'global/' + keyName);
                 await restoreCache(pipelineInput, awsS3Client);
 
                 tl.setResult = jest.fn()
