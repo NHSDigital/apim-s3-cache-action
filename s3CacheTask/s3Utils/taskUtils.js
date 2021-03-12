@@ -18,15 +18,21 @@ const parseHrtimeToSeconds = (hrtime) => {
 const restoreCache = async (pipelineInput, s3Client) => {
     const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
     const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
+
+    // Find working target path from location
     const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
     const targetPath = path.resolve(workingDir, location);
-
     debug(`Extracting from: ${targetPath}`);
 
+    // Create and set S3 cache key
     const hashedKey = await cacheAction.createCacheKey(key, workingDir);
     const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
-
+    const keyName =
+        alias && alias.length > 0 ? `CacheKey-${alias}` : "CacheKey";
+    tl.setVariable(keyName, formattedKey);
     debug(`Using S3 cache key: ${formattedKey}`);
+
+    // Look up cache entry in S3 bucket
     debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
 
     const startTime = process.hrtime();
@@ -35,62 +41,65 @@ const restoreCache = async (pipelineInput, s3Client) => {
 
     debug(`Cache report from S3: ${cacheReport.message}`);
 
-    let cacheRestored;
+    // Report Cache in task
+    let cacheRestoredValue;
     if (cacheReport.message === 'cache miss') {
-        cacheRestored = 'false';
+        cacheRestoredValue = 'false';
     } else {
-        cacheRestored = 'true';
+        cacheRestoredValue = 'true';
         debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`);
     }
-    const output =
+    const cacheRestoredName =
         alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
+    tl.setVariable(cacheRestoredName, cacheRestoredValue);
 
-    const restore = {
-        name: output,
-        value: cacheRestored
-    };
-    tl.setVariable(restore.name, restore.value);
-    debug(`Cache restored: ${cacheRestored}`);
+    debug(`Cache restored: ${cacheRestoredValue}`);
+
     return;
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
-    const output =
-        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
-    const cacheRestored = tl.getVariable(output);
+    const { location, bucket, alias } = pipelineInput;
 
+    // Get cache variables
+    const cacheRestoredName =
+        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
+    const cacheRestored = tl.getVariable(cacheRestoredName);
+    const keyName =
+        alias && alias.length > 0 ? `CacheKey-${alias}` : "CacheKey";
+    const key = tl.getVariable(keyName);
+
+    // Determine cache upload
     if (cacheRestored === 'false') {
         const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
         const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
         const targetPath = path.resolve(workingDir, location);
         
         debug(`Extracting from: ${targetPath}`)
+        debug(`Using S3 cache key: ${key}`);
+        debug(`Evaluating S3 cache for path: s3://${bucket}/${key}`);
 
-        const hashedKey = await cacheAction.createCacheKey(key, workingDir);
-        const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
-
-        debug(`Using S3 cache key: ${formattedKey}`);
-        debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
-
-        await cacheAction.createCacheEntry(targetPath, formattedKey);
+        await cacheAction.createCacheEntry(targetPath, key);
         tl.setResult(
             tl.TaskResult.Succeeded,
             'Uploaded to cache.'
         );
         debug('Uploaded to cache.');
+
         return;
     } else if (!cacheRestored) {
         tl.setResult(
             tl.TaskResult.Skipped,
             'No cache reported. Upload skipped.'
         );
+
         return;
     } else {
         tl.setResult(
             tl.TaskResult.Skipped,
             'Cache exists. Upload skipped.'
         );
+        
         return;
     }
     

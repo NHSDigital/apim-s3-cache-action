@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "s3-cache-task",
     "name": "S3 Cache Action",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "publisher": "nhsd-apim-alca3",
     "targets": [
         {
