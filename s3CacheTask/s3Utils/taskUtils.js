@@ -40,7 +40,7 @@ const restoreCache = async (pipelineInput, s3Client) => {
         cacheRestored = 'false';
     } else {
         cacheRestored = 'true';
-        debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} in ${elapsedSeconds} seconds.`);
+        debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`);
     }
 
     const restore = {

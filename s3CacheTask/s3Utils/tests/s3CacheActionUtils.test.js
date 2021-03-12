@@ -3,6 +3,7 @@ const { isPathyChar,
         isPathyPart,
         createHashFromString,
         hashFileOrString,
+        readableBytes
         } = require('../s3CacheActionUtils');
 
 describe('isPathyChar', () => {
@@ -109,5 +110,31 @@ describe('createHashFromString', () => {
         const hashResult = createHashFromString(keyExample);
 
         expect(hashRegex.test(hashResult)).toBe(true);
+    });
+});
+
+describe('readableBytes', () => {
+    test('returns 0 Bytes for 0 on input', () => {
+        expect(readableBytes(0)).toBe('0 Bytes');
+    });
+
+    test('returns Bytes for byte amount input', () => {
+        expect(readableBytes(900)).toBe('900 Bytes');
+    });
+
+    test('returns KB for KB amount input', () => {
+        expect(readableBytes(10000)).toBe('9.8 KB');
+    });
+
+    test('returns MB for MB amount input', () => {
+        expect(readableBytes(9874321)).toBe('9.4 MB');
+    });
+
+    test('returns GB for GB amount input', () => {
+        expect(readableBytes(10000000000)).toBe('9.3 GB');
+    });
+
+    test('returns TB for TB amount input', () => {
+        expect(readableBytes(712893712304234)).toBe('648.4 TB');
     });
 });

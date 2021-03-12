@@ -7,7 +7,7 @@ const path = require('path');
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
-const { hashFileOrString } = require('./s3CacheActionUtils');
+const { hashFileOrString, readableBytes } = require('./s3CacheActionUtils');
 const { debug } = require('./debug');
 
 class S3CacheAction {
@@ -96,9 +96,9 @@ class S3CacheAction {
     async maybeGetCacheEntry (keyName, destination) {
         try {
             const cacheData = await this.findCacheEntry(keyName);
-            let tarSize = 0;
+            let downloadedBytes = 0;
             await pipeline(cacheData.on('data', function(chunk){
-                tarSize += chunk.length;
+                downloadedBytes += chunk.length;
               }), tar.extract(destination));
 
             const fixedPythonVenv = await this.maybeFixPythonVenv(destination);
@@ -109,7 +109,8 @@ class S3CacheAction {
             if (stderr) {
                 throw new Error(stderr);
             }
-            const extractedSize = stdout.split('/')[0]
+            const tarSize = readableBytes(downloadedBytes);
+            const extractedSize = stdout.split('/')[0].trim() + 'B';
             
 
             if (fixedPythonVenv) {
