@@ -1,19 +1,82 @@
 # APIM S3 Cache Action
 
-## Overview
-The S3 cache action is an Azure Pipelines extension to be used with build pipelines in Azure DevOps to give us better control of our caching when deploying APIs.  
+## Azure Task Extension
+The S3 cache action is an Azure Pipelines extension to be used with build pipelines in Azure DevOps to give us better control of our caching dependencies when deploying APIs. The task is not exclusive to dependencies and can cache a given file or folder.   
 
-This is currently at a proof of concept stage.  
+## How to use
+The s3-cache-action task is designed to add an easy way to provide caching of dependencies. To demonstrate, let's examine the following build definition snippet:
+```yaml
+  - task: s3-cache-action@1
+    inputs:
+        key: 'node | s3CacheTask/package-lock.json'
+        location: 's3CacheTask/node_modules'
+    displayName: cache node modules
+
+  - bash: npm install
+    condition: ne(variables['CacheRestored'], 'true')
+    displayName: Install node dependencies
+```
+The task will internally hash the key to create a path to give to S3 and check for a cache hit. On a first run of the build the action will report a cache miss (as they have never been cached), the install dependencies step will run and the task will run a post-build job to upload the dependencies to S3. On the second run of the build the task will report cache hit, as the key exists in S3. This will extract the dependencies, use them and skip the install and post build steps.   
+
+### Inputs
+- `key` (required) : Key that will be hashed in S3. Pattern: Id (optional) | location of file | file pattern. Use file pattern to point to package-lock.json or poetry.lock to check changes to dependencies.
+- `location` (required) : Path to file or folder to be cached.
+- `bucket` (optional) : S3 bucket for cache task to use. By default uses environment to cache to NHSD pipeline bucket.
+- `pipelineIsolated` (optional) : Adds pipeline id to S3 to make cache only valid for the pipeline using it. Set false by default.
+- `debug` (optional) : Set true to turn on logging information for the task. Set false by default.
+- `alias` (optional): This must be used if using the task more than once in a pipeline. This is appended to the 'CacheRestored' variable and should then be used in the condition for the install step. (Example below).
+
+```yaml
+  - task: s3-cache-action@1
+    inputs:
+        key: 'node | s3CacheTask/package-lock.json'
+        location: 's3CacheTask/node_modules'
+        pipelineIsolated: false
+        debug: true
+        alias: 'NodeModules'
+    displayName: cache node modules
+
+  - bash: npm install
+    condition: ne(variables['CacheRestored-NodeModules'], 'true')
+    displayName: Install node dependencies
+
+  - task: s3-cache-action@1
+    inputs:
+        key: 'python venv | ./poetry.lock'
+        location: '.venv'
+        pipelineIsolated: false
+        debug: true
+        alias: 'Poetry'
+    displayName: cache virtual env
+
+  - bash: poetry install
+    condition: ne(variables['CacheRestored-Poetry'], 'true')
+    displayName: Install poetry dependencies
+```
 
   
-## Testing
-To test the s3 interactions locally run the below commands. These will install dependancies then start localstack in a docker container using docker compose and run the tests in Jest.
+## Testing the task code
+To test the s3 interactions locally run the below commands. These will install dependencies then start localstack in a docker container using docker compose and run the tests in Jest.
 
-```
+```bash
 make install
 make test
 ```
-  
+
+## Making changes to the apim-s3-cache-action repo
+Any changes made in the 's3CacheTask' folder MUST be then re-exported and uploaded to the extension marketplace for the changes to be applied to the task.
+
+### Re-exporting and Re-installing the task
+- Increment the version number in the 'vss-extension.json' and 's3CacheTask/task.json' files.
+- Run the following command in the command line to package the task
+```bash
+tfx extension create --manifest-globs vss-extension.json
+```
+- Sign in to the Azure extention marketplace and upload/update the extension. https://marketplace.visualstudio.com/
+- Share the extension with organisation 'NHSD-APIM'.
+- Ask the NHSD-APIM admin to install the exetension.
+(Note: To ensure the task has updated resharing and reinstalling the task may be needed)   
+    
 
 ## S3CacheAction Class
 
@@ -22,7 +85,7 @@ The S3 Cache Task uses the S3CacheAction class for interacting with S3.
 
 The class can be instantiated using an `options` object to set up the AWS client and bucket.  
 
-```
+```javascript
 const options = {
     s3Client: new AWS.S3({
             credentials: {
@@ -46,13 +109,13 @@ The `createCacheKey` method will then hash the key parts an join them seperated 
 
 If the key part is a file it will hash the file, otherwise it will hash the string.  
 
-```
+```bash
 // Identifier | Target Path | File Pattern
 
 // Examples
 
 // Input
-'"node modules" | { path_to_node_modules } | node_modules'
+'"node modules" | { path_to_node_modules } | package-lock.json'
 // Output
 a08e14f4ae7761bd5b85b22f235f9b2e6a489ed7b71904daf8069c225abf983c/45549dbb28f29efdb4b8aeb2b69088d8fa34693a2cc3597fe2389eecc8b17742/dba27c31aad935787bb275c3e5e4e957708f15386de599eff1db476022cd7e4c
 
