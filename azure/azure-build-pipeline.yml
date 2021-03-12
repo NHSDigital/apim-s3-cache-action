@@ -62,7 +62,7 @@ stages:
             displayName: cache node modules
 
           - bash: make install-node
-            condition: ne(variables.CacheRestored-NodeModules, 'true')
+            condition: ne(variables['CacheRestored-NodeModules'], 'true')
             displayName: Install node dependencies
 
           - task: s3-cache-action@0
@@ -75,7 +75,7 @@ stages:
             displayName: cache virtual env
 
           - bash: make install-poetry
-            condition: ne(variables.CacheRestored-Poetry, 'true')
+            condition: ne(variables['CacheRestored-Poetry'], 'true')
             displayName: Install poetry dependencies
 
           - bash: |
