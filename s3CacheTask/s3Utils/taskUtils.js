@@ -27,9 +27,6 @@ const restoreCache = async (pipelineInput, s3Client) => {
     // Create and set S3 cache key
     const hashedKey = await cacheAction.createCacheKey(key, workingDir);
     const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
-    const keyName =
-        alias && alias.length > 0 ? `CacheKey-${alias}` : "CacheKey";
-    tl.setVariable(keyName, formattedKey);
     debug(`Using S3 cache key: ${formattedKey}`);
 
     // Look up cache entry in S3 bucket
@@ -59,27 +56,28 @@ const restoreCache = async (pipelineInput, s3Client) => {
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    const { location, bucket, alias } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
 
     // Get cache variables
     const cacheRestoredName =
         alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
     const cacheRestored = tl.getVariable(cacheRestoredName);
-    const keyName =
-        alias && alias.length > 0 ? `CacheKey-${alias}` : "CacheKey";
-    const key = tl.getVariable(keyName);
+
 
     // Determine cache upload
     if (cacheRestored === 'false') {
         const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
         const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
         const targetPath = path.resolve(workingDir, location);
-        
-        debug(`Extracting from: ${targetPath}`)
-        debug(`Using S3 cache key: ${key}`);
-        debug(`Evaluating S3 cache for path: s3://${bucket}/${key}`);
+        debug(`Extracting from: ${targetPath}`);
 
-        await cacheAction.createCacheEntry(targetPath, key);
+        const hashedKey = await cacheAction.createCacheKey(key, workingDir);
+        const formattedKey = pipelineIsolated === 'true' ? addPipelineIdToKey(hashedKey) : hashedKey;
+        debug(`Using S3 cache key: ${formattedKey}`);
+
+        debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);
+
+        await cacheAction.createCacheEntry(targetPath, formattedKey);
         tl.setResult(
             tl.TaskResult.Succeeded,
             'Uploaded to cache.'
