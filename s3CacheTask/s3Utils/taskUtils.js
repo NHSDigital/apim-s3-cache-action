@@ -73,6 +73,7 @@ const uploadCache = async (pipelineInput, s3Client) => {
 
         const hashedKey = await cacheAction.createCacheKey(key, workingDir);
         const formattedKey = pipelineIsolated === 'true' ? 'pipeline/' + addPipelineIdToKey(hashedKey) : 'global/' + hashedKey;
+        
         debug(`Using S3 cache key: ${formattedKey}`);
 
         debug(`Evaluating S3 cache for path: s3://${bucket}/${formattedKey}`);

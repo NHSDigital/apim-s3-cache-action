@@ -55,33 +55,33 @@ stages:
           - bash: |
               node --version
               npm --version
-            displayName: versions
+            displayName: Versions
 
           - bash: |
               source ~/.nvm/nvm.sh
               node --version
               npm --version
               nvm --version
-            displayName: versions2
+            displayName: Versions2
 
           - bash: |
               set -e
               source ~/.nvm/nvm.sh
               nvm install-latest-npm
-            displayName: update npm
+            displayName: Update npm
 
           - bash: |
               source ~/.nvm/nvm.sh
               node --version
               npm --version
               nvm --version
-            displayName: versions3  
+            displayName: Versions3  
 
           - task: s3-cache-action@1
             inputs:
               key: 'node | s3CacheTask/package-lock.json'
               location: 's3CacheTask/node_modules'
-              pipelineIsolated: false
+              pipelineIsolated: true
               debug: true
               alias: 'NodeModules'
             displayName: cache node modules
@@ -96,7 +96,7 @@ stages:
             inputs:
               key: 'python venv | ./poetry.lock'
               location: '.venv'
-              pipelineIsolated: false
+              pipelineIsolated: true
               debug: true
               alias: 'Poetry'
             displayName: cache virtual env
