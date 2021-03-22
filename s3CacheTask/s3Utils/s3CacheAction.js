@@ -7,7 +7,8 @@ const path = require('path');
 const { promisify } = require('util')
 const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
-const { hashFileOrString } = require('./cacheKeyUtils');
+const { hashFileOrString, readableBytes } = require('./s3CacheActionUtils');
+const { debug } = require('./debug');
 
 class S3CacheAction {
 
@@ -18,17 +19,24 @@ class S3CacheAction {
     }
 
     async createCacheKey (key, workingDir) {
+        if (!key) return null;
+        debug(`input key: ${key}`);
         const keyParts = key.split('|').map(part => part.trim());
         const keyPartsHashed = await Promise.all(keyParts.map((part) => hashFileOrString(part, workingDir)));
-        
-        return keyPartsHashed.join('/');
+        const hashedKey = keyPartsHashed.join('/');
+        debug(`hashed key: ${hashedKey}`);
+        return hashedKey;
     }
 
     async createCacheEntry (targetPath, keyName) {
+        if (!fs.existsSync(targetPath)) throw new Error('no such file or directory at target path');
         const pathIsDir = fs.statSync(targetPath).isDirectory();
         let stream;
     
         if (pathIsDir) {
+            if (fs.readdirSync(targetPath).length === 0) {
+                throw new Error('nothing to cache: directory at target path is empty');
+            }
             stream = tar.pack(targetPath);
         } else {
             const pathArr = targetPath.split('/');
@@ -48,7 +56,7 @@ class S3CacheAction {
         ).promise();
      }
 
-     async findCacheEntry (keyName) {
+    async findCacheEntry (keyName) {
         return this.s3Client.getObject(
             {
                 Bucket: this.bucket,
@@ -76,7 +84,7 @@ class S3CacheAction {
             const pythonRegex = new RegExp('^#!.*python');
 
             if (pythonRegex.test(firstLine)) {
-                // replace is regec based and only replaces first occurance.
+                // replace is regex based and only replaces first occurance.
                 const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`);
                 fs.writeFileSync(filePath, altData);
             }
@@ -88,13 +96,33 @@ class S3CacheAction {
     async maybeGetCacheEntry (keyName, destination) {
         try {
             const cacheData = await this.findCacheEntry(keyName);
-            await pipeline(cacheData, tar.extract(destination));
+            let downloadedBytes = 0;
+            await pipeline(cacheData.on('data', function(chunk){
+                downloadedBytes += chunk.length;
+              }), tar.extract(destination));
+
             const fixedPythonVenv = await this.maybeFixPythonVenv(destination);
+            
+            const bashCmd = `du -h -d 0 "${destination}"`;
+            const { err, stdout, stderr } = await exec(bashCmd);
+            if (err) throw err;
+            if (stderr) {
+                throw new Error(stderr);
+            }
+            const tarSize = readableBytes(downloadedBytes);
+            const extractedSize = stdout.split('/')[0].trim() + 'B';
+            
 
             if (fixedPythonVenv) {
-                return { message: 'cache hit and python paths fixed' };
+                return { message: 'cache hit and python paths fixed',
+                         tarSize,
+                         extractedSize
+                        };
             } else {
-                return { message: 'cache hit' };
+                return { message: 'cache hit',
+                         tarSize,
+                         extractedSize
+                        };
             }
         } catch (error) {
             if (error.message === 'The specified key does not exist.') {
@@ -105,4 +133,4 @@ class S3CacheAction {
     }
 }
 
-module.exports = { S3CacheAction };
+module.exports = S3CacheAction;

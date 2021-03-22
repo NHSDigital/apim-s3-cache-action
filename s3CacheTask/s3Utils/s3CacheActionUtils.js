@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { debug } = require('./debug');
 
 const isPathyChar = (char) => {
     const globChars = ['*', '?', '[', ']'];
@@ -36,13 +37,22 @@ const createHashFromString = inputString => {
 const hashFileOrString = async (part, workingDir) => {
     if (!isPathyPart(part)) return createHashFromString(part);
 
-    const pathExists = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
+    const truePath = [part, path.resolve(workingDir, part)].find(p => fs.existsSync(p));
 
-    if (pathExists && fs.statSync(pathExists).isFile()) {
-        return await createHashFromFile(pathExists);
+    if (truePath && fs.statSync(truePath).isFile()) {
+        debug(`File exists: hashing file ${truePath}`)
+        return await createHashFromFile(truePath);
     } else {
         return createHashFromString(part);
     };
 };
 
-module.exports = { isPathyChar, isPathyPart, createHashFromString, hashFileOrString };
+const readableBytes = (bytes) => {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+    if (i === 0) return `${bytes} ${sizes[i]}`;
+    return `${(bytes / (1024 ** i)).toFixed(1)} ${sizes[i]}`;
+};
+
+module.exports = { isPathyChar, isPathyPart, createHashFromString, hashFileOrString, readableBytes };

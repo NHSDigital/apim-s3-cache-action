@@ -8,29 +8,69 @@
     "category": "Utility",
     "author": "NHS Digitial",
     "version": {
-        "Major": 0,
-        "Minor": 1,
-        "Patch": 0
+        "Major": 1,
+        "Minor": 2,
+        "Patch": 4
     },
     "instanceNameFormat": "Echo $(samplestring)",
     "inputs": [
         {
-            "name": "samplestring",
+            "name": "key",
             "type": "string",
-            "label": "Sample String",
+            "label": "S3 Key",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "A sample string"
+            "helpMarkDown": "A key that will be hashed and used for S3 Cache Entry"
+        },
+        {
+            "name": "location",
+            "type": "string",
+            "label": "Location",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Path to file or folder to be cached"
+        },
+        {
+            "name": "bucket",
+            "type": "string",
+            "label": "Bucket",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Name of S3 bucket item will be cached in"
+        },
+        {
+            "name": "pipelineIsolated",
+            "type": "boolean",
+            "label": "Pipeline ID",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Isolate cache to pipeline"
+        },
+        {
+            "name": "debug",
+            "type": "boolean",
+            "label": "Debug",
+            "defaultValue": false,
+            "required": false,
+            "helpMarkDown": "Should debug or not"
+        },
+        {
+            "name": "alias",
+            "type": "string",
+            "label": "Cache alias",
+            "helpMarkDown": "An optional alias to the cache to control the name of the output variable.",
+            "defaultValue": "",
+            "required": false
         }
     ],
     "execution": {
         "Node10": {
-            "target": "index.js"
+            "target": "restoreCache.js"
         }
     },
     "postjobexecution": {
         "Node10": {
-            "target": "savecache.js"
+            "target": "uploadCache.js"
         }
     }
 }

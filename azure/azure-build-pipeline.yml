@@ -52,13 +52,66 @@ stages:
             inputs:
               versionSpec: '13.x'
 
-          - bash: make install
-            displayName: Install dependencies
+          - bash: |
+              node --version
+              npm --version
+            displayName: Versions
+
+          - bash: |
+              source ~/.nvm/nvm.sh
+              node --version
+              npm --version
+              nvm --version
+            displayName: Versions2
+
+          - bash: |
+              set -e
+              source ~/.nvm/nvm.sh
+              nvm install-latest-npm
+            displayName: Update npm
+
+          - bash: |
+              source ~/.nvm/nvm.sh
+              node --version
+              npm --version
+              nvm --version
+            displayName: Versions3  
+
+          - task: s3-cache-action@1
+            inputs:
+              key: 'node | s3CacheTask/package-lock.json'
+              location: 's3CacheTask/node_modules'
+              pipelineIsolated: true
+              debug: true
+              alias: 'NodeModules'
+            displayName: cache node modules
+
+          - bash: |
+              source ~/.nvm/nvm.sh
+              make install-node
+            condition: ne(variables['CacheRestored-NodeModules'], 'true')
+            displayName: Install node dependencies
+
+          - task: s3-cache-action@1
+            inputs:
+              key: 'python venv | ./poetry.lock'
+              location: '.venv'
+              pipelineIsolated: true
+              debug: true
+              alias: 'Poetry'
+            displayName: cache virtual env
+
+          - bash: make install-poetry
+            condition: ne(variables['CacheRestored-Poetry'], 'true')
+            displayName: Install poetry dependencies
 
           - bash: |
               make test
               exit_code=$?
               echo Exit code - ${exit_code}
               make down
+              cd scripts
+              export VIRTUAL_ENV_PATH="../.venv"
+              sh check-python-venv-fixed.sh
               exit ${exit_code}
             displayName: Run s3 tests

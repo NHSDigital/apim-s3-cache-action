@@ -13,3 +13,6 @@ test:
 
 test-watch:
 	npm run test-watch
+
+test-verbose:
+	npm run test-verbose
