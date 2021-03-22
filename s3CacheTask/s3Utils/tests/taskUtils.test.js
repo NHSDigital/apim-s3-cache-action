@@ -30,6 +30,7 @@ describe('taskUtils', () => {
         awsS3Client = new AWS.S3({
             credentials: vars.credentials,
             endpoint: vars.endpoint,
+            region: 'eu-west-2',
             s3ForcePathStyle: true
         });
         pipelineCacheRestoredResult = tl.getVariable('CacheRestored')
