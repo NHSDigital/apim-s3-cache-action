@@ -16,10 +16,12 @@ The s3-cache-action task is designed to add an easy way to provide caching of de
     condition: ne(variables['CacheRestored'], 'true')
     displayName: Install node dependencies
 ```
-The task will internally hash the key to create a path to give to S3 and check for a cache hit. On a first run of the build the action will report a cache miss (as they have never been cached), the install dependencies step will run and the task will run a post-build job to upload the dependencies to S3. On the second run of the build the task will report cache hit, as the key exists in S3. This will extract the dependencies, use them and skip the install and post build steps.   
+The task will internally hash the key to create a path to give to S3 and check for a cache hit. On a first run of the build the action will report a cache miss (as they have never been cached), the install dependencies step will run and the task will run a post-build job to upload the dependencies to S3. On the second run of the build the task will report cache hit, as the key exists in S3. This will extract the dependencies, use them and skip the install and post build steps. 
+
+*Note: Using a condition on the install step is optional, as the install will report that the dependencies are already installed. The conditional logic can be used to be more explicit in the pipeline*    
 
 ### Inputs
-- `key` (required) : Key that will be hashed in S3. Pattern: Id (optional) | location of file | file pattern. Use file pattern to point to package-lock.json or poetry.lock to check changes to dependencies.
+- `key` (required) : Key that will be hashed in S3. Pattern: Id (optional) | working directory | file pattern. Use file pattern to point to package-lock.json or poetry.lock to check changes to dependencies.
 - `location` (required) : Path to file or folder to be cached.
 - `bucket` (optional) : S3 bucket for cache task to use. By default uses environment to cache to NHSD pipeline bucket.
 - `pipelineIsolated` (optional) : Adds pipeline id to S3 to make cache only valid for the pipeline using it. Set false by default.
@@ -105,34 +107,34 @@ If you have your AWS credentials globally configured then s3Client option can be
 #### createCacheKey
 The S3CacheAction caching interractions must be provided with a key string with a specific format.  
 
-The `createCacheKey` method will then hash the key parts an join them seperated by '/' characters, which creates a file tree within the provided S3 bucket.  
+The `createCacheKey` method will then hash the key parts an join them separated by '/' characters, which creates a file tree within the provided S3 bucket.  
 
 If the key part is a file it will hash the file, otherwise it will hash the string.  
 
 ```bash
-// Identifier | Target Path | File Pattern
+// Identifier | Working Directory | File Pattern
 
 // Examples
 
 // Input
-'"node modules" | { path_to_node_modules } | package-lock.json'
+'"node modules" | $(System.DefaultWorkingDirectory) | package-lock.json'
 // Output
 a08e14f4ae7761bd5b85b22f235f9b2e6a489ed7b71904daf8069c225abf983c/45549dbb28f29efdb4b8aeb2b69088d8fa34693a2cc3597fe2389eecc8b17742/dba27c31aad935787bb275c3e5e4e957708f15386de599eff1db476022cd7e4c
 
 // Input
-'Test data | { path_to_test_data_file } | testData/test.json'
+'Test data | $(System.DefaultWorkingDirectory) | testData/test.json'
 // Output
 e27c8214be8b7cf5bccc7c08247e3cb0c1514a48ee1f63197fe4ef3ef51d7e6f/8a4f7378bf9f77ee01e78ff0dc31ff5669358a6fe0198be9a6f859999b9d50f2/8253544304dab00d2a070de771567c2bf6c5decc4120424324dfbc8169c4e63a
 ```
   
 
 #### createCacheEntry
-The `createCacheEntry` method uploads a file or directory as cache entry in S3. It requires a `targetPath` (path to file or directory you want to cache) and a `keyName`, which should the key hashed using the createCacheKey method.  
+The `createCacheEntry` method uploads a file or directory as cache entry in S3. It requires a `targetPath` (path to file or directory you want to cache) and a `keyName`, which should the key hashed using the `createCacheKey` method.  
 The method packs the file or directory into a tar and streams the tar to S3
   
 
 #### maybeGetCacheEntry
-The `maybeGetCacheEntry` method retrieves a cache entry from S3 using the hashed key it was uploaded with. It requires the hashed `keyName`, which should the key hashed using the createCacheKey method. It also requires a `destination`, which is the destination for the cache entry to be extracted to.  
+The `maybeGetCacheEntry` method retrieves a cache entry from S3 using the hashed key it was uploaded with. It requires the hashed `keyName`, which should the key hashed using the `createCacheKey` method. It also requires a `destination`, which is the destination for the cache entry to be extracted to.  
   
 The method calls the `findCacheEntry` method, which returns a stream of the desired cache entry and the pipes the stream to the destination directory. It will report a cache hit on a success.  
 
