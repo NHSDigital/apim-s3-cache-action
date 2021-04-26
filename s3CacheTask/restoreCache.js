@@ -17,7 +17,8 @@ const run = async () => {
             location: tl.getInput('location', true),
             bucket: bucket,
             pipelineIsolated: tl.getInput('pipelineIsolated', false),
-            alias: tl.getInput('alias', false)
+            alias: tl.getInput('alias', false),
+            workingDirectory: tl.getInput('workingDirectory', false)
         };
         
         debug('Running: restoreCache');

@@ -50,3 +50,5 @@ utils/
 
 # tests
 reports/
+
+s3CacheTask/.taskkey

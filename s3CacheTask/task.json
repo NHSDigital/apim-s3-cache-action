@@ -61,6 +61,14 @@
             "helpMarkDown": "An optional alias to the cache to control the name of the output variable.",
             "defaultValue": "",
             "required": false
+        },
+        {
+            "name": "workingDirectory",
+            "type": "string",
+            "label": "Working Directory",
+            "helpMarkDown": "Optional working directory for evaluating the cache key segments / location.",
+            "defaultValue": "",
+            "required": false
         }
     ],
     "execution": {

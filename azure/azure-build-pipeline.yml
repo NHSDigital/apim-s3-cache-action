@@ -84,12 +84,17 @@ stages:
               pipelineIsolated: true
               debug: true
               alias: 'NodeModules'
+            name: NodeModules
             displayName: cache node modules
+
+          - bash: |
+              echo "restored: $(NodeModules.Restored)"
+            displayName: print retored
 
           - bash: |
               source ~/.nvm/nvm.sh
               make install-node
-            condition: ne(variables['CacheRestored-NodeModules'], 'true')
+            condition: ne('$(NodeModules.Restored)', 'true')
             displayName: Install node dependencies
 
           - task: s3-cache-action@1
@@ -99,6 +104,7 @@ stages:
               pipelineIsolated: true
               debug: true
               alias: 'Poetry'
+            name: Poetry
             displayName: cache virtual env
 
           - bash: make install-poetry
