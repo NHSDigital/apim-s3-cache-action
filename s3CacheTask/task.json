@@ -9,8 +9,8 @@
     "author": "NHS Digitial",
     "version": {
         "Major": 1,
-        "Minor": 2,
-        "Patch": 4
+        "Minor": 3,
+        "Patch": 1
     },
     "instanceNameFormat": "Echo $(samplestring)",
     "inputs": [
