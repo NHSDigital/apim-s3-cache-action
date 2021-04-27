@@ -14,6 +14,7 @@ const vars = {
     },
     endpoint: 'http://localhost:4666',
     testDataDir: '/testdata',
+    taskKey: `${__dirname}/../../.taskkey`,
     extractDir: `${__dirname}/../../../data/extract_location`,
     virtualEnv: `${__dirname}/../../../data/fakeVenv`, // Data extracted to reduce extension size
     extractVenv: `${__dirname}/../../../data/anotherVenv`, // Data extracted to reduce extension size
@@ -33,14 +34,17 @@ describe('taskUtils', () => {
             region: 'eu-west-2',
             s3ForcePathStyle: true
         });
-        pipelineCacheRestoredResult = tl.getVariable('CacheRestored')
+        pipelineCacheRestoredResult = tl.getTaskVariable('cacheRestored')
     });
 
     beforeEach(async () => {
         global.console = {
             log: jest.fn()
         };
-        const config = {};
+        const config = {
+            '/agent/_work/_temp/.taskkey': uuidv4()
+        }
+        config[vars.taskKey] = uuidv4();
         config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
@@ -54,12 +58,12 @@ describe('taskUtils', () => {
     });
 
     afterEach(() => {
+        tl.setTaskVariable('cacheRestored', undefined);
         mockFs.restore();
-        tl.setVariable('CacheRestored', undefined);
     });
 
     afterAll(() => {
-        tl.setVariable('CacheRestored', pipelineCacheRestoredResult);
+        tl.setTaskVariable('cacheRestored', pipelineCacheRestoredResult);
     })
 
     describe('addPipelineIdToKey', () => {
@@ -129,7 +133,7 @@ describe('taskUtils', () => {
 
                 await restoreCache(pipelineInput, awsS3Client);
 
-                expect(tl.getVariable('CacheRestored')).toBe('true');
+                expect(tl.getTaskVariable('cacheRestored')).toBe('true');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: true'
                 );
@@ -172,7 +176,7 @@ describe('taskUtils', () => {
 
                 await restoreCache(pipelineInput, awsS3Client);
 
-                expect(tl.getVariable('CacheRestored')).toBe('true');
+                expect(tl.getTaskVariable('cacheRestored')).toBe('true');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: true'
                 );
@@ -214,7 +218,7 @@ describe('taskUtils', () => {
 
                 await restoreCache(pipelineInput, awsS3Client);
 
-                expect(tl.getVariable('CacheRestored')).toBe('false');
+                expect(tl.getTaskVariable('cacheRestored')).toBe('false');
                 expect(global.console.log).toHaveBeenCalledWith(
                     'Cache restored: false'
                 );
@@ -362,7 +366,7 @@ describe('taskUtils', () => {
                 };
 
                 try {
-                    tl.setVariable('CacheRestored', 'false');
+                    tl.setTaskVariable('cacheRestored', 'false');
     
                     await uploadCache(pipelineInput, awsS3Client);
                     
@@ -382,7 +386,7 @@ describe('taskUtils', () => {
                 };
 
                 try {
-                    tl.setVariable('CacheRestored', 'false');
+                    tl.setTaskVariable('cacheRestored', 'false');
     
                     await uploadCache(pipelineInput, awsS3Client);
                     
@@ -402,7 +406,7 @@ describe('taskUtils', () => {
                 };
 
                 try {
-                    tl.setVariable('CacheRestored', 'false');
+                    tl.setTaskVariable('cacheRestored', 'false');
     
                     await uploadCache(pipelineInput, awsS3Client);
                     
