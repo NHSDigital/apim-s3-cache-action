@@ -18,6 +18,7 @@ const run = async () => {
             bucket: bucket,
             pipelineIsolated: tl.getInput('pipelineIsolated', false),
             alias: tl.getInput('alias', false),
+            cacheHitVar: tl.getInput('cacheHitVar', false),
             workingDirectory: tl.getInput('workingDirectory', false)
         };
 

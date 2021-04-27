@@ -16,7 +16,7 @@ const parseHrtimeToSeconds = (hrtime) => {
 }
 
 const restoreCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated, alias, workingDirectory } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias, cacheHitVar, workingDirectory } = pipelineInput;
     const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
 
     // Find working target path from location
@@ -53,8 +53,11 @@ const restoreCache = async (pipelineInput, s3Client) => {
     }
 
     tl.setTaskVariable('cacheRestored', cacheRestoredValue);
-    tl.setVariable(`Restored`, cacheRestoredValue, undefined, true);
-    const cacheRestoredName =  alias && alias.length > 0 ? `CacheRestored-${alias}` : `CacheRestored`;
+    tl.setVariable(`cacheRestored`, cacheRestoredValue, undefined, true);
+    const cacheRestoredName =  (
+        cacheHitVar && cacheHitVar.length > 0 ? cacheHitVar :
+        (alias && alias.length > 0 ? `CacheRestored-${alias}` : `CacheRestored`)
+    );
     tl.setVariable(cacheRestoredName, cacheRestoredValue);
 
     debug(`Cache restored: ${cacheRestoredValue}`);
@@ -63,7 +66,7 @@ const restoreCache = async (pipelineInput, s3Client) => {
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated, alias, workingDirectory } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias, cacheHitVar, workingDirectory } = pipelineInput;
 
     const cacheRestored = tl.getTaskVariable('cacheRestored');
 

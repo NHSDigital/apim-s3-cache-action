@@ -63,6 +63,14 @@
             "required": false
         },
         {
+            "name": "cacheHitVar",
+            "type": "string",
+            "label": "Cache Hit variable name",
+            "helpMarkDown": "An optional variable in which to store the result of a cache hit / miss.",
+            "defaultValue": "",
+            "required": false
+        },
+        {
             "name": "workingDirectory",
             "type": "string",
             "label": "Working Directory",
