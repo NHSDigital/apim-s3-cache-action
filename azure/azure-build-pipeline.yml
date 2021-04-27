@@ -94,7 +94,7 @@ stages:
           - bash: |
               source ~/.nvm/nvm.sh
               make install-node
-            condition: ne('$(NodeModules.Restored)', 'true')
+            condition: ne(variables['NodeModules.Restored'], 'true')
             displayName: Install node dependencies
 
           - task: s3-cache-action@1
