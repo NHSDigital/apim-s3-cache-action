@@ -84,12 +84,17 @@ stages:
               pipelineIsolated: true
               debug: true
               alias: 'NodeModules'
+              cacheHitVar: "StoreItHere"
             name: NodeModules
             displayName: cache node modules
 
           - bash: |
-              echo "restored: $(NodeModules.Restored)"
-            displayName: print retored
+              echo "restored: $(NodeModules.cacheRestored)"
+            displayName: print cacheRestored
+
+          - bash: |
+              echo "restored: $(StoreItHere)"
+            displayName: print cacheHitVar
 
           - bash: |
               source ~/.nvm/nvm.sh
@@ -106,6 +111,10 @@ stages:
               alias: 'Poetry'
             name: Poetry
             displayName: cache virtual env
+
+          - bash: |
+              echo "restored: $(CacheRestored-Poetry)"
+            displayName: print alias var
 
           - bash: make install-poetry
             condition: ne(variables['CacheRestored-Poetry'], 'true')
