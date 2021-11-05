@@ -9,8 +9,8 @@
     "author": "NHS Digitial",
     "version": {
         "Major": 1,
-        "Minor": 2,
-        "Patch": 4
+        "Minor": 3,
+        "Patch": 1
     },
     "instanceNameFormat": "Echo $(samplestring)",
     "inputs": [
@@ -59,6 +59,22 @@
             "type": "string",
             "label": "Cache alias",
             "helpMarkDown": "An optional alias to the cache to control the name of the output variable.",
+            "defaultValue": "",
+            "required": false
+        },
+        {
+            "name": "cacheHitVar",
+            "type": "string",
+            "label": "Cache Hit variable name",
+            "helpMarkDown": "An optional variable in which to store the result of a cache hit / miss.",
+            "defaultValue": "",
+            "required": false
+        },
+        {
+            "name": "workingDirectory",
+            "type": "string",
+            "label": "Working Directory",
+            "helpMarkDown": "Optional working directory for evaluating the cache key segments / location.",
             "defaultValue": "",
             "required": false
         }

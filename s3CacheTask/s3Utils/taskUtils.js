@@ -16,13 +16,18 @@ const parseHrtimeToSeconds = (hrtime) => {
 }
 
 const restoreCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias, cacheHitVar, workingDirectory } = pipelineInput;
     const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
 
     // Find working target path from location
-    const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+    let workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+
+    if (workingDirectory && workingDirectory.length > 0) {
+        workingDir = path.resolve(workingDir, workingDirectory)
+    }
+
     const targetPath = path.resolve(workingDir, location);
-    debug(`Extracting from: ${targetPath}`);
+    debug(`Extracting to: ${targetPath}`);
 
     // Create and set S3 cache key
     const hashedKey = await cacheAction.createCacheKey(key, workingDir);
@@ -46,8 +51,13 @@ const restoreCache = async (pipelineInput, s3Client) => {
         cacheRestoredValue = 'true';
         debug(`Downloaded ${cacheReport.tarSize} bytes and extracted ${cacheReport.extractedSize} bytes in ${elapsedSeconds} seconds.`);
     }
-    const cacheRestoredName =
-        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
+
+    tl.setTaskVariable('cacheRestored', cacheRestoredValue);
+    tl.setVariable(`cacheRestored`, cacheRestoredValue, undefined, true);
+    const cacheRestoredName =  (
+        cacheHitVar && cacheHitVar.length > 0 ? cacheHitVar :
+        (alias && alias.length > 0 ? `CacheRestored-${alias}` : `CacheRestored`)
+    );
     tl.setVariable(cacheRestoredName, cacheRestoredValue);
 
     debug(`Cache restored: ${cacheRestoredValue}`);
@@ -56,20 +66,23 @@ const restoreCache = async (pipelineInput, s3Client) => {
 };
 
 const uploadCache = async (pipelineInput, s3Client) => {
-    const { key, location, bucket, pipelineIsolated, alias } = pipelineInput;
+    const { key, location, bucket, pipelineIsolated, alias, cacheHitVar, workingDirectory } = pipelineInput;
 
-    // Get cache variables
-    const cacheRestoredName =
-        alias && alias.length > 0 ? `CacheRestored-${alias}` : "CacheRestored";
-    const cacheRestored = tl.getVariable(cacheRestoredName);
-
+    const cacheRestored = tl.getTaskVariable('cacheRestored');
 
     // Determine cache upload
     if (cacheRestored === 'false') {
         const cacheAction = new S3CacheAction({ s3Client: s3Client, bucket: bucket });
-        const workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+
+        // Find working target path from location
+        let workingDir = tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+
+        if (workingDirectory && workingDirectory.length > 0) {
+            workingDir = path.resolve(workingDir, workingDirectory)
+        }
+
         const targetPath = path.resolve(workingDir, location);
-        debug(`Extracting from: ${targetPath}`);
+        debug(`Target path: ${targetPath}`);
 
         const hashedKey = await cacheAction.createCacheKey(key, workingDir);
         const formattedKey = pipelineIsolated === 'true' ? 'pipeline/' + addPipelineIdToKey(hashedKey) : 'global/' + hashedKey;

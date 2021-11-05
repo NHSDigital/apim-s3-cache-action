@@ -84,12 +84,22 @@ stages:
               pipelineIsolated: true
               debug: true
               alias: 'NodeModules'
+              cacheHitVar: "StoreItHere"
+            name: NodeModules
             displayName: cache node modules
+
+          - bash: |
+              echo "restored: $(NodeModules.cacheRestored)"
+            displayName: print cacheRestored
+
+          - bash: |
+              echo "restored: $(StoreItHere)"
+            displayName: print cacheHitVar
 
           - bash: |
               source ~/.nvm/nvm.sh
               make install-node
-            condition: ne(variables['CacheRestored-NodeModules'], 'true')
+            condition: ne(variables['NodeModules.cacheRestored'], 'true')
             displayName: Install node dependencies
 
           - task: s3-cache-action@1
@@ -99,7 +109,12 @@ stages:
               pipelineIsolated: true
               debug: true
               alias: 'Poetry'
+            name: Poetry
             displayName: cache virtual env
+
+          - bash: |
+              echo "restored: $(CacheRestored-Poetry)"
+            displayName: print alias var
 
           - bash: make install-poetry
             condition: ne(variables['CacheRestored-Poetry'], 'true')
