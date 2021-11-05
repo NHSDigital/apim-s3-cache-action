@@ -69,7 +69,7 @@ class S3CacheAction {
         const isPythonVenv = fs.existsSync(path.resolve(targetPath, 'bin/python'));
         if (!isPythonVenv) return false;
 
-        const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep -E 'Python script|ASCII text' |  cut -d: -f1`;
+        const bashCmd = `find "${targetPath}/bin" -type f -print0 | xargs -0 file | grep 'Python script' |  cut -d: -f1`;
 
         const { err, stdout, stderr } = await exec(bashCmd);
         if (err) throw err;
@@ -79,41 +79,14 @@ class S3CacheAction {
 
         const filePaths = stdout.trim().split('\n');
         filePaths.forEach(filePath => {
-            let contents = fs.readFileSync(filePath, {encoding: 'utf-8'});
-            const shBangRegex = new RegExp('^#!.*python');
-            let updated = false;
-            if (shBangRegex.test(contents)) {
+            const data = fs.readFileSync(filePath, {encoding: 'utf-8'});
+            const firstLine = data.split('\n')[0];
+            const pythonRegex = new RegExp('^#!.*python');
+
+            if (pythonRegex.test(firstLine)) {
                 // replace is regex based and only replaces first occurance.
-                contents = contents.replace(shBangRegex, `#!${targetPath}/bin/python`);
-                updated = true
-            }
-
-            const execRegex = new RegExp("'''exec' /[^\n ]*/bin/python ", 'g');
-
-            if (execRegex.test(contents)) {
-                // replace is regex based and only replaces first occurance.
-                contents = contents.replace(execRegex, `'''exec' ${targetPath}/bin/python `);
-                updated = true
-            }
-
-            const venvRegex1 = new RegExp('VIRTUAL_ENV "[^"].*"');
-
-            if (venvRegex1.test(contents)) {
-                // replace is regex based and only replaces first occurance.
-                contents = contents.replace(venvRegex1, `VIRTUAL_ENV "${targetPath}"`);
-                updated = true
-            }
-
-            const venvRegex2 = new RegExp('VIRTUAL_ENV="[^"].*"');
-
-            if (venvRegex2.test(contents)) {
-                // replace is regex based and only replaces first occurance.
-                contents = contents.replace(venvRegex2, `VIRTUAL_ENV="${targetPath}"`);
-                updated = true
-            }
-
-            if (updated) {
-                fs.writeFileSync(filePath, contents);
+                const altData = data.replace(pythonRegex, `#!${targetPath}/bin/python`);
+                fs.writeFileSync(filePath, altData);
             }
         });
 
