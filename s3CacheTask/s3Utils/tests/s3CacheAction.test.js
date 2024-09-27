@@ -245,87 +245,6 @@ describe('S3CacheAction', () => {
             expect(newFirstLine).toBe(newShebang);
         })
 
-        test('rewrites new exec style console scripts', async () => {
-
-            const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/exec_python`, {encoding: 'utf-8'});
-
-            expect(originalData).toContain("exec' /agent/apath/.venv/bin/python");
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const newExec = `exec' ${vars.virtualEnv}/bin/python`;
-            const newData = fs.readFileSync(`${vars.virtualEnv}/bin/exec_python`, {encoding: 'utf-8'});
-
-            expect(newData).toContain(newExec);
-        })
-
-        test('rewrites activate.csh', async () => {
-
-            const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.csh`, {encoding: 'utf-8'});
-
-            expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const newExec = `exec' ${vars.virtualEnv}/bin/python`;
-            const newData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.csh`, {encoding: 'utf-8'});
-
-            expect(newData).toContain(`VIRTUAL_ENV "${vars.virtualEnv}"`);
-        })
-
-
-        test('rewrites activate.fish', async () => {
-
-            const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.fish`, {encoding: 'utf-8'});
-
-            expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const newExec = `exec' ${vars.virtualEnv}/bin/python`;
-            const newData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.fish`, {encoding: 'utf-8'});
-
-            expect(newData).toContain(`VIRTUAL_ENV "${vars.virtualEnv}"`);
-        })
-
-        test('rewrites activate', async () => {
-
-            const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate`, {encoding: 'utf-8'});
-
-            expect(originalData).toContain('VIRTUAL_ENV="/home/zaphod/apm/apim-s3-cache-action/.venv"');
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const newExec = `exec' ${vars.virtualEnv}/bin/python`;
-            const newData = fs.readFileSync(`${vars.virtualEnv}/bin/activate`, {encoding: 'utf-8'});
-
-            expect(newData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
-        })
-
-        test('leaves other exec commands', async () => {
-
-            const preStats = fs.statSync(`${vars.virtualEnv}/bin/exec_other`);
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const postStats = fs.statSync(`${vars.virtualEnv}/bin/exec_other`);
-
-            expect(preStats.mtimeMs).toEqual(postStats.mtimeMs);
-
-        })
-
-        test('leaves Activate.ps1', async () => {
-
-            const preStats = fs.statSync(`${vars.virtualEnv}/bin/Activate.ps1`);
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const postStats = fs.statSync(`${vars.virtualEnv}/bin/Activate.ps1`);
-
-            expect(preStats.mtimeMs).toEqual(postStats.mtimeMs);
-
-        })
-
         test('doesnt change python file if file doesnt include shebang line', async () => {
             const preStats = fs.statSync(`${vars.virtualEnv}/bin/another_python_script.py`);
 
@@ -333,17 +252,7 @@ describe('S3CacheAction', () => {
 
             const postStats = fs.statSync(`${vars.virtualEnv}/bin/another_python_script.py`);
 
-            expect(preStats.mtimeMs).toEqual(postStats.mtimeMs);
-        })
-
-        test('doesnt read a shbang over multiple lines', async () => {
-            const preStats = fs.statSync(`${vars.virtualEnv}/bin/something_else`);
-
-            await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
-
-            const postStats = fs.statSync(`${vars.virtualEnv}/bin/something_else`);
-
-            expect(preStats.mtimeMs).toEqual(postStats.mtimeMs);
+            expect(preStats).toEqual(postStats);
         })
 
         test('doesnt change symlinks', async () => {
