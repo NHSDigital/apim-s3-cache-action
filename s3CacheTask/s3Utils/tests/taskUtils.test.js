@@ -70,12 +70,9 @@ describe('taskUtils', () => {
         describe('happy path', () => {
             test('pipelineId is appended to key', async () => {
                 const inputKey = '"Test" | data/testData/test.json | test.json';
-                print("inputKey", inputKey);
                 pretestGetVar = tl.getVariable;
                 tl.getVariable = jest.fn(() => { return '1234'});
-
                 const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
-                
                 const outputKey = addPipelineIdToKey(hashedKey);
                 expect(outputKey).toBe('1234/' + hashedKey);
                 tl.getVariable = pretestGetVar;
