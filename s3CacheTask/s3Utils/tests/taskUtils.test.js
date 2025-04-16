@@ -6,6 +6,7 @@ const tl = require('azure-pipelines-task-lib/task');
 const { v4: uuidv4 } =  require('uuid');
 const { addPipelineIdToKey, restoreCache, uploadCache } = require('../taskUtils');
 const S3CacheAction = require('../s3CacheAction');
+const AWS = require('aws-sdk');
 
 const vars = {
     credentials: {
@@ -37,15 +38,13 @@ describe('taskUtils', () => {
         pipelineCacheRestoredResult = tl.getTaskVariable('cacheRestored')
     });
 
-     
     beforeEach(async () => {
         global.console = {
             log: jest.fn()
         };
         const config = {
-            '/agent/_work/_temp/.taskkey': uuidv4()
-        }
-        process.env.AGENT_VERSION = '2.0.0';
+            '/agent/_work/_temp/.task key': uuidv4(),
+        };
         config[vars.taskKey] = uuidv4();
         config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
@@ -56,12 +55,11 @@ describe('taskUtils', () => {
         mockFs(config);
         randomBucket = uuidv4();
         await awsS3Client.createBucket({Bucket: randomBucket}).promise();
-        cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket})
+        cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket});
     });
 
     afterEach(() => {
         tl.setTaskVariable('cacheRestored', undefined);
-        delete process.env.AGENT_VERSION;
         mockFs.restore();
     });
 
