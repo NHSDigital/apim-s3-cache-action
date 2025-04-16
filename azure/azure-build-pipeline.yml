@@ -43,14 +43,14 @@ stages:
             displayName: Print AWS info
 
           - task: UsePythonVersion@0
-            displayName: "Use Python 3.8"
+            displayName: "Use Python 3.9"
             inputs:
               versionSpec: "3.9"
 
           - task: NodeTool@0
-            displayName: "Use Node 13"
+            displayName: "Use Node 20"
             inputs:
-              versionSpec: '14.x'
+              versionSpec: '20.x'
 
           - bash: |
               node --version
