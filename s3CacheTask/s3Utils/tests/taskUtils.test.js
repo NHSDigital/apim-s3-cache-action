@@ -37,6 +37,7 @@ describe('taskUtils', () => {
         pipelineCacheRestoredResult = tl.getTaskVariable('cacheRestored')
     });
 
+     
     beforeEach(async () => {
         global.console = {
             log: jest.fn()
@@ -44,6 +45,7 @@ describe('taskUtils', () => {
         const config = {
             '/agent/_work/_temp/.taskkey': uuidv4()
         }
+        process.env.AGENT_VERSION = '2.0.0';
         config[vars.taskKey] = uuidv4();
         config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
@@ -59,6 +61,7 @@ describe('taskUtils', () => {
 
     afterEach(() => {
         tl.setTaskVariable('cacheRestored', undefined);
+        delete process.env.AGENT_VERSION;
         mockFs.restore();
     });
 
