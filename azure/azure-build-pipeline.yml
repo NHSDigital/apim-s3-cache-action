@@ -45,12 +45,12 @@ stages:
           - task: UsePythonVersion@0
             displayName: "Use Python 3.8"
             inputs:
-              versionSpec: "3.8"
+              versionSpec: "3.9"
 
           - task: NodeTool@0
             displayName: "Use Node 13"
             inputs:
-              versionSpec: '13.x'
+              versionSpec: '14.x'
 
           - bash: |
               node --version
@@ -66,7 +66,6 @@ stages:
 
           - bash: |
               set -e
-              nvm use --delete-prefix v14.21.1 --silent
               source ~/.nvm/nvm.sh
               nvm install-latest-npm
             displayName: Update npm
