@@ -1,4 +1,5 @@
-version: '3.6'
+version: '3.6'  # Ensure the version is compatible with your Docker version
+
 services:
   localstack:
     image: localstack/localstack:latest
@@ -7,8 +8,10 @@ services:
       - DEBUG=1
       - EDGE_PORT=4666
     healthcheck:
-      test: awslocal s3 ls
+      test: ["CMD", "awslocal", "s3", "ls"]  # Updated to use CMD array format
       interval: 3s
       timeout: 10s
+      retries: 3  # Optional: Add retries for better health check reliability
     ports:
       - '4666:4666'
+
