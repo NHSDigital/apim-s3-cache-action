@@ -15,8 +15,8 @@ install-node:
 install-poetry:
 	poetry install
 
-up:
-	poetry run docker compose up -d localstack && poetry run docker compose wait --wait
+# up:
+# 	poetry run docker compose up -d localstack && poetry run docker compose wait --wait
 
 down:
 	poetry run docker compose down
