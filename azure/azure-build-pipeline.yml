@@ -68,6 +68,7 @@ stages:
               set -e
               source ~/.nvm/nvm.sh
               nvm install-latest-npm
+              nvm install
             displayName: Update npm
 
           - bash: |
