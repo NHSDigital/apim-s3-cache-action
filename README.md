@@ -4,7 +4,7 @@
 The S3 cache action is an Azure Pipelines extension to be used with build pipelines in Azure DevOps to give us better control of our caching dependencies when deploying APIs. The task is not exclusive to dependencies and can cache a given file or folder.   
 
 ## How to use
-The s3-cache-action task is designed to add an easy way to provide caching of dependencies. To demonstrate, let's examine the following build definition snippet:
+The s3-cache-action task is designed to add an easy way to provide caching of dependencies. To demonstrate, let's examine the following build definition snippet: 
 ```yaml
   - task: s3-cache-action@1
     inputs:
