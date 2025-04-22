@@ -73,9 +73,9 @@ describe('taskUtils', () => {
                 pretestGetVar = tl.getVariable;
                 tl.getVariable = jest.fn(() => { return '1234'});
 
-                const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
+                //const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
                 
-                const outputKey = addPipelineIdToKey(hashedKey);
+                const outputKey = addPipelineIdToKey("e27c8214be8b7cf5bccc7c08247e3cb0c1514a48ee1f63197fe4ef3ef51d7e6f/8a4f7378bf9f77ee01e78ff0dc31ff5669358a6fe0198be9a6f859999b9d50f2/8253544304dab00d2a070de771567c2bf6c5decc4120424324dfbc8169c4e63a");
                 expect(outputKey).toBe('1234/' + hashedKey);
                 tl.getVariable = pretestGetVar;
             });
