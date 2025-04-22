@@ -1,3 +1,0 @@
-#!/bin/sh
-'''exec' /agent/apath/.venv/bin/python "$0" "$@"
-' '''
