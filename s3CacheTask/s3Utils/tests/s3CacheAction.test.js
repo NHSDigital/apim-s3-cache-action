@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const path = require('path');
 const { v4: uuidv4 } =  require('uuid');
 const S3CacheAction = require('../s3CacheAction');
+const S3CacheAction = require('../s3CacheAction');
 
 const vars = {
     credentials: {
@@ -74,10 +75,22 @@ describe('S3CacheAction', () => {
                 const keyName = await cacheAction.createCacheKey('"test" | testData | testData/test.json', __dirname);
 
                 const resp = await cacheAction.createCacheEntry(targetPath, keyName);
-    
+
                 expect(resp['Bucket']).toBe(randomBucket);
                 expect(resp['Key']).toBe(keyName);
             });
+        });
+
+        test('successfully uploads directory to s3 bucket.', async () => {
+            const targetPath = `${vars.testDataDir}`;
+            const keyName = await cacheAction.createCacheKey(`"Test Data" | testData`, __dirname);
+
+            const resp = await cacheAction.createCacheEntry(targetPath, keyName);
+
+            expect(resp['Bucket']).toBe(randomBucket);
+            expect(resp['Key']).toBe(keyName);
+        });
+    });
     
             test('successfully uploads directory to s3 bucket.', async () => {
                 const targetPath = `${vars.testDataDir}`;
