@@ -45,7 +45,7 @@ describe('taskUtils', () => {
             '/agent/_work/_temp/.taskkey': uuidv4()
         }
         config[vars.taskKey] = uuidv4();
-        config[vars.extractDir] = {/** empty directory */};
+        config[vars.extractDir] = [];
         // Data extracted to reduce extension size
         config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
         config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
