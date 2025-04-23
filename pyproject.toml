@@ -8,7 +8,6 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.9"
-docker-compose-wait = "^1.2.2"
 
 [tool.poetry.group.dev.dependencies]
 jq = "^1.0.1"
