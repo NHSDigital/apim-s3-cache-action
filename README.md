@@ -16,7 +16,7 @@ The s3-cache-action task is designed to add an easy way to provide caching of de
     condition: ne(variables['CacheRestored'], 'true')
     displayName: Install node dependencies
 ```
-The task will internally hash the key to create a path  to give to S3 and check for a cache hit. On a first run of the build the action will report a cache miss (as they have never been cached), the install dependencies step will run and the task will run a post-build job to upload the dependencies to S3. On the second run of the build the task will report cache hit, as the key exists in S3. This will extract the dependencies, use them and skip the install and post build steps. 
+The task will internally hash the key to create a path to give to S3 and check for a cache hit. On a first run of the build the action will report a cache miss (as they have never been cached), the install dependencies step will run and the task will run a post-build job to upload the dependencies to S3. On the second run of the build the task will report cache hit, as the key exists in S3. This will extract the dependencies, use them and skip the install and post build steps. 
 
 *Note: Using a condition on the install step is optional, as the install will report that the dependencies are already installed. The conditional logic can be used to be more explicit in the pipeline*    
 
