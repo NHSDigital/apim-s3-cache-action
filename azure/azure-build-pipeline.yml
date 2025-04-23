@@ -43,9 +43,9 @@ stages:
             displayName: Print AWS info
 
           - task: UsePythonVersion@0
-            displayName: "Use Python 3.9"
+            displayName: "Use Python 3.10"
             inputs:
-              versionSpec: "3.9"
+              versionSpec: "3.10"
 
           - task: NodeTool@0
             displayName: "Use Node 18"

@@ -6,7 +6,7 @@ authors = ["Alex Carrie <alexander.carrie1@nhs.net>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+python = "^3.10"
 docker-compose-wait = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
