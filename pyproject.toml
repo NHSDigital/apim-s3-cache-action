@@ -9,7 +9,7 @@ license = "MIT"
 python = "^3.9"
 
 
-[tool.poetry.group.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 jq = "^1.0.1"
 docker-compose = "^1.29.2"
 
