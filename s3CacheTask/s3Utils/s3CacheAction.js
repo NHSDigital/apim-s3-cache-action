@@ -9,6 +9,7 @@ const pipeline = promisify(stream.pipeline);
 const exec = promisify(require('child_process').exec);
 const { hashFileOrString, readableBytes } = require('./s3CacheActionUtils');
 const { debug } = require('./debug');
+const { info } = require('console');
 
 class S3CacheAction {
 
