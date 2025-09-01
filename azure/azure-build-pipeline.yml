@@ -58,6 +58,12 @@ stages:
             displayName: Versions
 
           - bash: |
+              npm config delete prefix
+              source ~/.nvm/nvm.sh
+              nvm use --delete-prefix v14.21.1 --silent
+            displayName: Unset npm prefix and use nvm
+
+          - bash: |
               source ~/.nvm/nvm.sh
               node --version
               npm --version
