@@ -71,6 +71,9 @@ stages:
               unset NPM_CONFIG_PREFIX
               nvm install v14.21.1
               nvm use --delete-prefix v14.21.1 --silent
+              node --version
+              npm --version
+              nvm --version
               nvm install-latest-npm
             displayName: Update npm
 
