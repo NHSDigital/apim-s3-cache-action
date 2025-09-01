@@ -67,9 +67,10 @@ stages:
           - bash: |
               set -e
               source ~/.nvm/nvm.sh
-              npm config delete prefix
+              npm config delete prefix || true
+              unset NPM_CONFIG_PREFIX
+              nvm install v14.21.1
               nvm use --delete-prefix v14.21.1 --silent
-              nvm install-latest-npm
             displayName: Update npm
 
           - bash: |
