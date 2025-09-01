@@ -61,8 +61,9 @@ stages:
               npm config delete prefix
               source ~/.nvm/nvm.sh
               nvm use --delete-prefix v14.21.1 --silent
-            displayName: Unset npm prefix and use nvm
-
+              npm install -g npm@6
+            displayName: 'Fix npm version for Node 14'
+            
           - bash: |
               source ~/.nvm/nvm.sh
               node --version
