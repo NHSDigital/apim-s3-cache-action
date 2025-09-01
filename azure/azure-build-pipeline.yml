@@ -48,9 +48,9 @@ stages:
               versionSpec: "3.9"
 
           - task: NodeTool@0
-            displayName: "Use Node 13"
+            displayName: "Use Node 14"
             inputs:
-              versionSpec: '13.x'
+              versionSpec: '14.x'
 
           - bash: |
               node --version
