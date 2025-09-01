@@ -48,22 +48,15 @@ stages:
               versionSpec: "3.9"
 
           - task: NodeTool@0
-            displayName: "Use Node 13"
+            displayName: "Use Node 20"
             inputs:
-              versionSpec: '13.x'
+              versionSpec: '20.x'
 
           - bash: |
               node --version
               npm --version
             displayName: Versions
-
-          - bash: |
-              npm config delete prefix
-              source ~/.nvm/nvm.sh
-              nvm use --delete-prefix v14.21.1 --silent
-              npm install -g npm@6
-            displayName: 'Fix npm version for Node 14'
-            
+      
           - bash: |
               source ~/.nvm/nvm.sh
               node --version
