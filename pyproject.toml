@@ -7,7 +7,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-docker-compose-wait = "^1.2.2"
 requests = "^2.27.1"
 python-on-whales = "^0.57.0"
 
