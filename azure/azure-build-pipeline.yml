@@ -106,8 +106,8 @@ stages:
 
           - task: s3-cache-action@1
             inputs:
-              key: 'python venv | ./poetry.lock'
-              location: '.venv'
+              key: 'poetry | ./apim-s3-cache-action/.venv | ./apim-s3-cache-action/poetry.lock'
+              location: './apim-s3-cache-action/.venv'
               pipelineIsolated: true
               debug: true
               alias: 'Poetry'
