@@ -56,10 +56,8 @@ stages:
               node --version
               npm --version
             displayName: Versions
-      
+
           - bash: |
-              npm config delete prefix
-              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
               source ~/.nvm/nvm.sh
               node --version
               npm --version
@@ -69,6 +67,13 @@ stages:
           - bash: |
               set -e
               source ~/.nvm/nvm.sh
+              npm config delete prefix || true
+              unset NPM_CONFIG_PREFIX
+              nvm install v14.21.1
+              nvm use --delete-prefix v14.21.1 --silent
+              node --version
+              npm --version
+              nvm --version
               nvm install-latest-npm
             displayName: Update npm
 
@@ -106,8 +111,8 @@ stages:
 
           - task: s3-cache-action@1
             inputs:
-              key: 'poetry | ./apim-s3-cache-action/.venv | ./apim-s3-cache-action/poetry.lock'
-              location: './apim-s3-cache-action/.venv'
+              key: 'python venv | ./poetry.lock'
+              location: '.venv'
               pipelineIsolated: true
               debug: true
               alias: 'Poetry'
