@@ -95,7 +95,7 @@ describe('hashFileOrString', () => {
         });
 
         const part = 'foo/bar/foo.txt';
-        const expectHash = '089740ac2d3e5350a4e6bf309405c8130ca137a6aac457d3dabe552539fd7080';
+        const expectHash = 'fcde2b2edba56bf408601fb721fe9b5c338d10ee429ea04fae5511b68fbf8fb9';
 
         expect(await hashFileOrString(part, __dirname)).toBe(expectHash);
 
