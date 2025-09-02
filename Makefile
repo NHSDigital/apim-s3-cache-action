@@ -16,14 +16,7 @@ install-poetry:
 	poetry install
 
 up:
-	poetry run docker compose up -d localstack && \
-	sleep 5 && \
-	while true; do \
-		poetry run docker compose ps | grep -q 'localstack' && break; \
-		echo "Waiting for localstack to become healthy..."; \
-		sleep 2; \
-	done
-
+	poetry run docker compose up --wait -d localstack
 
 down:
 	poetry run docker compose down
