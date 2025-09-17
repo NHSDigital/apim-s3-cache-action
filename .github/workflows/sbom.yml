@@ -32,14 +32,10 @@ jobs:
           python-version: "3.13"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
 
-      - uses: terraform-linters/setup-tflint@v5
+      - uses: terraform-linters/setup-tflint@ae78205cfffec9e8d93fd2b3115c7e9d3166d4b6
         name: Setup TFLint
-        with:
-          tflint_version: v0.58.0
 
       - name: Set architecture variable
         id: os-arch
