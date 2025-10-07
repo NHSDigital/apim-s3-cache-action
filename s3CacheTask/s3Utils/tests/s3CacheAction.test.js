@@ -63,6 +63,11 @@ describe('S3CacheAction', () => {
     
     // Minimal FS for a python venv so maybeFixPythonVenv has something to work with
     mockFs({
+        
+        [vars.testDataDir]: {
+            'test.json': '{"foo": "bar"}'
+        },
+
         [vars.virtualEnv]: {
         bin: {
             // a file with a shebang that the fixer would rewrite
@@ -82,7 +87,14 @@ describe('S3CacheAction', () => {
     });
 
     // If maybeFixPythonVenv doesn't require S3, we can pass a stub client
-    const s3Stub = {};
+    const s3Stub = {
+        
+    getObject: jest.fn().mockImplementation(() => {
+        // return a mock response or throw as needed for your test
+        return { promise: () => Promise.reject(new Error('cache miss')) };
+    }),
+
+    };
     cacheAction = new S3CacheAction({ s3Client: s3Stub, bucket: 'dummy-bucket' });
     });
 
