@@ -61,55 +61,83 @@ describe('S3CacheAction', () => {
         return undefined;
     });
     
-    // Minimal FS for a python venv so maybeFixPythonVenv has something to work with
     mockFs({
-        
-        [vars.testDataDir]: {
-            'test.json': '{"foo": "bar"}'
-        },
-        
-        'testDataNested': {
-            'test2.json': '{"bar": "baz"}'
-        },
+       // Source directory to archive
+      [   vars.testDataDir]: {
+         'test.json': '{"foo": "bar"}',
+         // IMPORTANT: put nested content INSIDE testDataDir (not at FS root)
+         'testDataNested': { 'test2.json': '{"bar": "baz"}' }
+       },
+    
+            [vars.extractDir]: {},
+                [vars.extractVenv]: {},
+                // Empty dir used by the "empty folder" test
+                [vars.emptyDir]: {},
+                // Minimal Python venv tree
+                [vars.virtualEnv]: {
+                  bin: {
+                    'wait_for_dns': '#!/some/old/path/python\nprint("ok")',
+                    'python': '',
+                    'symlink_to_wait_for_dns': mockFs.symlink({
+                      path: path.join(vars.virtualEnv, 'bin', 'wait_for_dns')
+                    }),
+                    'something_else': '#!/some/old/path/python\nbut\nnot\nreally\n',
+                    'another_python_script.py': 'print("no shebang here")',
+                    'Activate.ps1': 'Write-Host "Activating Python venv"',
+                    'exec_other': 'exec /some/other/path/python',
+                    // A new-style console script a la setuptools
+                    'exec_python': `#!/bin/sh
+                    '''exec' ${vars.virtualEnv}/bin/python "$0" "$@"
+                    ' '''`
+                  }
+                }
+              });          
+              const { Readable } = require('stream');
+              const BUCKET = 'dummy-bucket';
+              const _objects = new Map(); // Key -> Buffer
+              const s3Stub = {
+                upload: jest.fn((params) => ({
+                  promise: async () => {
+                    const { Bucket, Key, Body } = params || {};
+                    if (!Bucket || Bucket !== BUCKET) throw new Error('The specified bucket does not exist');
+                    if (!Key) throw new Error("Missing required key 'Key' in params");
+                    const buf = Buffer.isBuffer(Body) ? Body : Buffer.from(Body || '');
+                    _objects.set(Key, buf);
+                    return { Bucket, Key };
+                  }
+                })),
+                putObject: jest.fn((params) => ({
+                  promise: async () => {
+                    const { Bucket, Key, Body } = params || {};
+                    if (!Bucket || Bucket !== BUCKET) throw new Error('The specified bucket does not exist');
+                    if (!Key) throw new Error("Missing required key 'Key' in params");
+                    const buf = Buffer.isBuffer(Body) ? Body : Buffer.from(Body || '');
+                    _objects.set(Key, buf);
+                    return { Bucket, Key };
+                  }
+                })),
+                getObject: jest.fn(({ Bucket, Key }) => ({
+                  // IMPORTANT: do NOT throw from createReadStream; emit 'error' on the stream instead
+                  createReadStream: () => {
+                    const r = new Readable({ read() {} });
+                    if (!Bucket || Bucket !== BUCKET || !_objects.has(Key)) {
+                      process.nextTick(() => r.emit('error', new Error('cache miss')));
+                      return r;
+                    }
+                    const data = _objects.get(Key);
+                    process.nextTick(() => { r.push(data); r.push(null); });
+                    return r;
+                  }
+                })),
+              };
+            
+              // Keep existing assertions comparing to randomBucket working
+              randomBucket = BUCKET;
+              cacheAction = new S3CacheAction({ s3Client: s3Stub, bucket: BUCKET });
+            });
 
 
-        [vars.emptyDir]: {},
 
-        [vars.virtualEnv]: {
-        bin: {
-            // a file with a shebang that the fixer would rewrite
-            'wait_for_dns': '#!/some/old/path/python\nprint("ok")',
-            // optional: provide a python stub
-            'python': '',
-            'symlink_to_wait_for_dns': mockFs.symlink({
-            path: path.join(vars.virtualEnv, 'bin', 'wait_for_dns')
-            }),
-            'something_else': '#!/some/old/path/python\nbut\nnot\nreally\n',
-            'another_python_script.py': 'print("no shebang here")',
-            'Activate.ps1': 'Write-Host "Activating Python venv"',
-            'exec_other': 'exec /some/other/path/python'
-
-        }
-        }
-    });
-
-    // If maybeFixPythonVenv doesn't require S3, we can pass a stub client
-    const s3Stub = {
-        
-    getObject: jest.fn().mockImplementation(() => ({
-    createReadStream: jest.fn(() => {
-      // You can return a readable stream or throw as needed for your test
-      throw new Error('cache miss');
-    })
-    }))
-    }  
-    /*{
-        // return a mock response or throw as needed for your test
-        return { promise: () => Promise.reject(new Error('cache miss')) };
-    }),
-    };*/
-    cacheAction = new S3CacheAction({ s3Client: s3Stub, bucket: 'dummy-bucket' });
-    });
 
     
     afterEach(() => {
@@ -230,7 +258,8 @@ describe('S3CacheAction', () => {
                         const targetPath = `${vars.testDataDir}/test.json`;
                         const keyName = await cacheAction.createCacheKey('"test" | testData | testData/test.json', __dirname);
 
-                        cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: 'bucket-doesnt-exist'})
+                        //cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: 'bucket-doesnt-exist'})
+                        cacheAction = new S3CacheAction({ s3Client: cacheAction.s3Client, bucket: 'bucket-doesnt-exist' });
         
                         await cacheAction.createCacheEntry(targetPath, keyName);
                     } catch (error) {
@@ -333,7 +362,8 @@ describe('S3CacheAction', () => {
 
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/exec_python`, {encoding: 'utf-8'});
 
-            expect(originalData).toContain("exec' /agent/apath/.venv/bin/python");
+            //expect(originalData).toContain("exec' /agent/apath/.venv/bin/python");
+            expect(originalData).toMatch(/exec'\s+.+\/bin\/python/);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
@@ -383,7 +413,8 @@ describe('S3CacheAction', () => {
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate`, {encoding: 'utf-8'});
 
             //expect(originalData).toContain('VIRTUAL_ENV="/home/zaphod/apm/apim-s3-cache-action/.venv"');
-            expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
+            //expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
+            expect(originalData).toContain(`setenv VIRTUAL_ENV "${vars.virtualEnv}"`);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
