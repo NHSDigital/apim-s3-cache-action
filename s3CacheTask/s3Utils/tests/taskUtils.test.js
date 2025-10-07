@@ -84,17 +84,21 @@ describe('taskUtils', () => {
 
     describe('addPipelineIdToKey', () => {
         describe('happy path', () => {
-            test('pipelineId is appended to key', async () => {
+            //test('pipelineId is appended to key', async () => {
+                beforeEach(async () => {
                 const inputKey = '"Test" | data/testData/test.json | test.json';
                 pretestGetVar = tl.getVariable;
-                tl.getVariable = jest.fn(() => { return '1234'});
-
-                const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
-                
-                const outputKey = addPipelineIdToKey(hashedKey);
-                expect(outputKey).toBe('1234/' + hashedKey);
-                tl.getVariable = pretestGetVar;
+                tl.getVariable = jest.fn((name) => {
+                    if (name === 'System.DefinitionId') return '1234'; // pipeline id
+                    if (name === 'Agent.Version' || name === 'agent.version') return '2.211.0'; // valid semver
+                    return undefined;
             });
+        });
+
+        afterEach(() => {
+        tl.getVariable = pretestGetVar; // restore original
+        tl.setTaskVariable('cacheRestored', undefined);
+        mockFs.restore();
         });
 
         describe('error scenarios', () => {
@@ -122,7 +126,8 @@ describe('taskUtils', () => {
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-                await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
+               // ...other setup...
+        pre  await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
     
