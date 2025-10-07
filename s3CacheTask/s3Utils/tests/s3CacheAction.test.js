@@ -68,7 +68,11 @@ describe('S3CacheAction', () => {
             // a file with a shebang that the fixer would rewrite
             'wait_for_dns': '#!/some/old/path/python\nprint("ok")',
             // optional: provide a python stub
-            'python': ''
+            'python': '',
+            'symlink_to_wait_for_dns': mockFs.symlink({
+            path: path.join(vars.virtualEnv, 'bin', 'wait_for_dns')
+            })
+
         }
         }
     });
