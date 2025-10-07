@@ -47,24 +47,8 @@ describe('taskUtils', () => {
         config[vars.taskKey] = uuidv4();
         config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
-        //config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
-        
-        config[vars.testDataDir] = {
-        'test.json': '{"hello":"world"}',
-        'testDataNested': {
-            'test2.json': '{"foo":"bar"}'
-        }
-        };
-
-        //config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
-       
-        config[vars.virtualEnv] = {
-        'test.json': '{"hello":"world"}',
-        'testDataNested': {
-            'test2.json': '{"foo":"bar"}'
-        }
-        };
-
+        config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
+        config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
         config[vars.extractVenv] = {/** empty directory */};
         config[vars.emptyDir] = {/** empty directory */};
         mockFs(config);
@@ -84,22 +68,31 @@ describe('taskUtils', () => {
 
     describe('addPipelineIdToKey', () => {
         describe('happy path', () => {
-            //test('pipelineId is appended to key', async () => {
-                beforeEach(async () => {
-                const inputKey = '"Test" | data/testData/test.json | test.json';
-                pretestGetVar = tl.getVariable;
-                tl.getVariable = jest.fn((name) => {
-                    if (name === 'System.DefinitionId') return '1234'; // pipeline id
-                    if (name === 'Agent.Version' || name === 'agent.version') return '2.211.0'; // valid semver
-                    return undefined;
+            test('pipelineId is appended to key', async () => {
+            // Use a simple string (or template literal) for readability
+            const inputKey = '"Test" | data/testData/test.json | test.json';
+
+            // Mock only what we need:
+            // - System.DefinitionId => '1234'
+            // - Agent version => valid semver (prevents semver errors in task lib)
+            const getVarSpy = jest
+                .spyOn(tl, 'getVariable')
+                .mockImplementation((name) => {
+                if (name === 'System.DefinitionId') return '1234';
+                if (name === 'Agent.Version' || name === 'agent.version') return '2.211.0';
+                return undefined;
+                });
+
+            const hashedKey = await cacheAction.createCacheKey(inputKey, __dirname);
+            const outputKey = addPipelineIdToKey(hashedKey);
+
+            expect(outputKey).toBe(`1234/${hashedKey}`);
+
+            // Always restore the spy so other tests see the real implementation
+            getVarSpy.mockRestore();
             });
         });
-
-        afterEach(() => {
-        tl.getVariable = pretestGetVar; // restore original
-        tl.setTaskVariable('cacheRestored', undefined);
-        mockFs.restore();
-        });
+    });
 
         describe('error scenarios', () => {
             test('pipelineId is not appended to key', async () => {
@@ -126,7 +119,6 @@ describe('taskUtils', () => {
     
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
-               // ...other setup...
                 await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
@@ -484,4 +476,3 @@ describe('taskUtils', () => {
             });
         });
     });
-});
