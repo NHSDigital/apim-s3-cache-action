@@ -303,7 +303,7 @@ describe('S3CacheAction', () => {
         })
 
         test('If python file and includes shebang replaces shebang line path with target dir path', async () => {
-            const originalShebang = '#!/home/ubuntu/some-project/.venv/bin/python';
+            const originalShebang = `#!${vars.virtualEnv}/bin/python`;
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/wait_for_dns`, {encoding: 'utf-8'});
             const firstLine = originalData.split('\n')[0];
             expect(firstLine).toBe(originalShebang);
