@@ -96,12 +96,18 @@ describe('S3CacheAction', () => {
     // If maybeFixPythonVenv doesn't require S3, we can pass a stub client
     const s3Stub = {
         
-    getObject: jest.fn().mockImplementation(() => {
+    getObject: jest.fn().mockImplementation(() => ({
+    createReadStream: jest.fn(() => {
+      // You can return a readable stream or throw as needed for your test
+      throw new Error('cache miss');
+    })
+    }))
+    }  
+    /*{
         // return a mock response or throw as needed for your test
         return { promise: () => Promise.reject(new Error('cache miss')) };
     }),
-
-    };
+    };*/
     cacheAction = new S3CacheAction({ s3Client: s3Stub, bucket: 'dummy-bucket' });
     });
 
