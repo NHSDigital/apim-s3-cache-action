@@ -127,7 +127,7 @@ describe('taskUtils', () => {
                 const pathToFile = `${vars.testDataDir}/test.json`;
                 const keyName = await cacheAction.createCacheKey(pipelineInput.key, __dirname);
                // ...other setup...
-        pre  await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
+              await cacheAction.createCacheEntry(pathToFile, 'global/' + keyName);
     
                 const readExtractDir = () => { return fs.readdirSync(path.resolve(__dirname, pipelineInput.location))};
     
