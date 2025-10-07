@@ -71,7 +71,8 @@ describe('S3CacheAction', () => {
             'python': '',
             'symlink_to_wait_for_dns': mockFs.symlink({
             path: path.join(vars.virtualEnv, 'bin', 'wait_for_dns')
-            })
+            }),
+            'something_else': '#!/some/old/path/python\nbut\nnot\nreally\n'
 
         }
         }
