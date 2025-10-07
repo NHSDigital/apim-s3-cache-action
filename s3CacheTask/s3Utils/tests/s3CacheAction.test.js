@@ -364,14 +364,16 @@ describe('S3CacheAction', () => {
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.fish`, {encoding: 'utf-8'});
 
             //expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
-            expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
+            //expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
+            expect(originalData).toContain(`set -gx VIRTUAL_ENV "${vars.virtualEnv}"`);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
             const newExec = `exec' ${vars.virtualEnv}/bin/python`;
             const newData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.fish`, {encoding: 'utf-8'});
 
-            expect(newData).toContain(`VIRTUAL_ENV "${vars.virtualEnv}"`);
+            //expect(newData).toContain(`VIRTUAL_ENV "${vars.virtualEnv}"`);
+            expect(newData).toContain(`set -gx VIRTUAL_ENV "${vars.virtualEnv}"`);
         })
 
         test('rewrites activate', async () => {
