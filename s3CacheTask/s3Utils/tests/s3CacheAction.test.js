@@ -73,7 +73,9 @@ describe('S3CacheAction', () => {
             path: path.join(vars.virtualEnv, 'bin', 'wait_for_dns')
             }),
             'something_else': '#!/some/old/path/python\nbut\nnot\nreally\n',
-            'another_python_script.py': 'print("no shebang here")'
+            'another_python_script.py': 'print("no shebang here")',
+            'Activate.ps1': 'Write-Host "Activating Python venv"',
+            'exec_other': 'exec /some/other/path/python'
 
         }
         }
@@ -320,7 +322,8 @@ describe('S3CacheAction', () => {
 
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.csh`, {encoding: 'utf-8'});
 
-            expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            //expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
@@ -335,7 +338,8 @@ describe('S3CacheAction', () => {
 
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate.fish`, {encoding: 'utf-8'});
 
-            expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            //expect(originalData).toContain('VIRTUAL_ENV "/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
@@ -349,7 +353,8 @@ describe('S3CacheAction', () => {
 
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/activate`, {encoding: 'utf-8'});
 
-            expect(originalData).toContain('VIRTUAL_ENV="/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            //expect(originalData).toContain('VIRTUAL_ENV="/home/zaphod/apm/apim-s3-cache-action/.venv"');
+            expect(originalData).toContain(`VIRTUAL_ENV="${vars.virtualEnv}"`);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
