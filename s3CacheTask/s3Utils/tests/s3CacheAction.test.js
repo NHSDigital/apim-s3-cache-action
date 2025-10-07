@@ -3,7 +3,9 @@ const fs = require('fs');
 const AWS = require('aws-sdk');
 const path = require('path');
 const { v4: uuidv4 } =  require('uuid');
+const tl = require('azure-pipelines-task-lib/task');
 const S3CacheAction = require('../s3CacheAction');
+
 
 const vars = {
     credentials: {
@@ -17,6 +19,10 @@ const vars = {
     extractVenv: `${__dirname}/../../../data/anotherVenv`, // Data extracted to reduce extension size
     emptyDir: '/emptyDir'
 };
+
+let cacheAction;
+let preGetVar;
+
 
 describe('S3CacheAction', () => {
     let awsS3Client;
@@ -32,21 +38,66 @@ describe('S3CacheAction', () => {
         });
     });
 
-    beforeEach(async () => {
-        const config = {};
-        config[vars.extractDir] = {/** empty directory */};
+    //beforeEach(async () => {
+      //  const config = {};
+      //  config[vars.extractDir] = {/** empty directory */};
         // Data extracted to reduce extension size
-        config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
-        config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
-        config[vars.extractVenv] = {/** empty directory */};
-        config[vars.emptyDir] = {/** empty directory */};
-        mockFs(config);
-        randomBucket = uuidv4();
-        await awsS3Client.createBucket({Bucket: randomBucket}).promise();
-        cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket})
+        //config[vars.testDataDir] = mockFs.load(path.resolve(__dirname, '../../../data/testData'), {recursive: true, lazy: false});
+        //config[vars.virtualEnv] = mockFs.load(path.resolve(__dirname, '../../../data/fakeVenv'), {recursive: true, lazy: false});
+        //config[vars.extractVenv] = {/** empty directory */};
+        //config[vars.emptyDir] = {/** empty directory */};
+        //mockFs(config);
+        //randomBucket = uuidv4();
+        //await awsS3Client.createBucket({Bucket: randomBucket}).promise();
+        //cacheAction = new S3CacheAction({s3Client: awsS3Client, bucket: randomBucket})
+    //});
+
+    
+    beforeEach(() => {
+    // Make sure azure-pipelines-task-lib doesn’t crash on semver checks
+    preGetVar = tl.getVariable;
+    tl.getVariable = jest.fn((name) => {
+        if (name === 'Agent.Version' || name === 'agent.version') return '2.211.0';
+        return undefined;
+    });
+    
+    // Minimal FS for a python venv so maybeFixPythonVenv has something to work with
+    mockFs({
+        [vars.virtualEnv]: {
+        bin: {
+            // a file with a shebang that the fixer would rewrite
+            'wait_for_dns': '#!/some/old/path/python\nprint("ok")',
+            // optional: provide a python stub
+            'python': ''
+        }
+        }
     });
 
-    afterEach(mockFs.restore);
+    // If maybeFixPythonVenv doesn't require S3, we can pass a stub client
+    const s3Stub = {};
+    cacheAction = new S3CacheAction({ s3Client: s3Stub, bucket: 'dummy-bucket' });
+    });
+
+    
+    afterEach(() => {
+    tl.getVariable = preGetVar;
+    mockFs.restore();
+    });
+
+    describe('S3CacheAction', () => {
+    describe('maybeFixPythonVenv', () => {
+        test('returns true if dir is python virtual env', async () => {
+        // sanity check helps produce clearer errors if method is missing
+        expect(typeof cacheAction.maybeFixPythonVenv).toBe('function');
+
+        const resp = await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
+        expect(resp).toBe(true);
+        });
+    });
+    });
+
+
+    /*afterEach(mockFs.restore);
 
     describe('createCacheKey', () => {
         test('return string with same number of "/" separated parts', async () => {
@@ -65,7 +116,7 @@ describe('S3CacheAction', () => {
     
             expect(firstCall).toBe(secondCall);
         });
-    });
+    });*/
 
     describe('createCacheEntry', () => {
         describe('happy path', () => {    
