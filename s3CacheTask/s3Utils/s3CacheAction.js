@@ -29,21 +29,10 @@ class S3CacheAction {
     }
 
     async createCacheEntry (targetPath, keyName) {
-        //if (!fs.existsSync(targetPath)) throw new Error('no such file or directory at target path');
+        if (!fs.existsSync(targetPath)) throw new Error('no such file or directory at target path');
         
-        //const pathIsDir = fs.statSync(targetPath).isDirectory();
-        //let stream;
-        if (!fs.existsSync(targetPath)) {
-            const looksLikeDir = !path.extname(targetPath);
-            
-            if (looksLikeDir) {
-                fs.mkdirSync(targetPath, { recursive: true });
-
-            }
-            else {
-                throw new Error('no such file or directory at target path');
-                }
-            }
+        const pathIsDir = fs.statSync(targetPath).isDirectory();
+        let stream;
 
         if (pathIsDir) {
             if (fs.readdirSync(targetPath).length === 0) {
