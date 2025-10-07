@@ -67,6 +67,12 @@ describe('S3CacheAction', () => {
         [vars.testDataDir]: {
             'test.json': '{"foo": "bar"}'
         },
+        
+        'testDataNested': {
+            'test2.json': '{"bar": "baz"}'
+        },
+
+        [vars.emptyDir]: {},
 
         [vars.virtualEnv]: {
         bin: {
