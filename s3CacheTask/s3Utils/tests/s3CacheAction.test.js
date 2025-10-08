@@ -364,7 +364,7 @@ describe('S3CacheAction', () => {
 
             //expect(originalData).toContain("exec' /agent/apath/.venv/bin/python");
             //expect(originalData).toMatch(/exec'\s+.+\/bin\/python/);
-            expect(originalData).toMatch(/exec'\s+(?=[^\r\n]*\/bin\/python)[^\r\n]*/);
+            expect(originalData).toMatch(/exec'\s+\S*\/bin\/python(?:\b|$)/);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
