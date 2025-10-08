@@ -139,4 +139,3 @@ stages:
               sh check-python-venv-fixed.sh
               exit ${exit_code}
             displayName: Run s3 tests
-            condition: and(succeeded(), eq(variables['RunS3Tests'], 'true'))
