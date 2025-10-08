@@ -363,7 +363,8 @@ describe('S3CacheAction', () => {
             const originalData = fs.readFileSync(`${vars.virtualEnv}/bin/exec_python`, {encoding: 'utf-8'});
 
             //expect(originalData).toContain("exec' /agent/apath/.venv/bin/python");
-            expect(originalData).toMatch(/exec'\s+.+\/bin\/python/);
+            //expect(originalData).toMatch(/exec'\s+.+\/bin\/python/);
+            expect(originalData).toMatch(/exec'\s+(?=[^\r\n]*\/bin\/python)[^\r\n]*/);
 
             await cacheAction.maybeFixPythonVenv(vars.virtualEnv);
 
