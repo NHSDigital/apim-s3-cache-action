@@ -2,8 +2,8 @@
     "manifestVersion": 1,
     "id": "s3-cache-task",
     "name": "S3 Cache Action",
-    "version": "1.3.4",
-    "publisher": "nhsd-apim-alca3",
+    "version": "1.3.5",
+    "publisher": "nhsd-apim-sama23",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
