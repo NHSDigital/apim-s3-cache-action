@@ -194,6 +194,8 @@ describe('createCacheEntry', () => {
       expect(resp['Bucket']).toBe(randomBucket);
       expect(resp['Key']).toBe(keyName);
     });
+    });
+
 
     test('successfully uploads directory to s3 bucket.', async () => {
       expect(fs.existsSync(vars.testDataDir)).toBe(true);
