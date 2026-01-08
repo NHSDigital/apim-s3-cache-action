@@ -16,10 +16,10 @@ install-poetry:
 	poetry install
 
 up:
-	poetry run docker-compose up -d localstack && poetry run docker-compose-wait --wait
+	docker compose up -d localstack --wait
 
 down:
-	poetry run docker-compose down
+	docker compose down
 
 test: up
 	make -C s3CacheTask test

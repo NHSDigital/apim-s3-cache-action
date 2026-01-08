@@ -4,7 +4,7 @@
   "description": "## Overview The S3 cache action should be used with build pipelines in Azure DevOps to give us better control of our caching when deploying APIs. This is currently at a proof of concept stage.",
   "main": "restoreCache.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand --env=node",
     "test-watch": "jest --watch",
     "test-verbose": "jest --verbose"
   },
