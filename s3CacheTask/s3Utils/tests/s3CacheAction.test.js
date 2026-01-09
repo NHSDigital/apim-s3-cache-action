@@ -276,7 +276,7 @@ describe('createCacheEntry', () => {
       });
     });
   });
-});
+
 
 describe('maybeGetCacheEntry', () => {
   test('successfully extracts directory from tarball', async () => {
