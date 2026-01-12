@@ -52,3 +52,8 @@ utils/
 reports/
 
 s3CacheTask/.taskkey
+
+# direnv
+.direnv
+.envrc*
+secrets/

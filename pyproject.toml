@@ -4,10 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["Alex Carrie <alexander.carrie1@nhs.net>"]
 license = "MIT"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.8"
-docker-compose-wait = "^1.2.2"
+python = "^3.13"
 
 [tool.poetry.dev-dependencies]
 jq = "^1.0.1"
