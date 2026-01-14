@@ -23,7 +23,6 @@
     "aws-sdk": "^2.1693.0",
     "azure-pipelines-task-lib": "^5.2.5",
     "crypto": "^1.0.1",
-    "docker": "^0.2.14",
     "fs": "^0.0.1-security",
     "marked": "^4.0.10",
     "path": "^0.12.7",
